@@ -1,0 +1,908 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Optical Portfolio Gallery</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #08090b;
+        --muted: rgba(8, 9, 11, 0.56);
+        --line: rgba(8, 9, 11, 0.08);
+        --panel: rgba(255, 255, 255, 0.78);
+        --card-w: clamp(168px, 12.6vw, 264px);
+        --card-h: clamp(240px, 18vw, 375px);
+        --stage-depth: 980px;
+        --card-gap: clamp(78px, 5.58vw, 102px);
+        --card-angle: -22deg;
+        --ease-out: cubic-bezier(0.2, 0, 0, 1);
+        font-family:
+          "Neue Haas Grotesk Text", "Helvetica Neue", Helvetica, Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: geometricPrecision;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        min-height: 100dvh;
+        overflow: hidden;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.98), transparent 34%),
+          radial-gradient(circle at 74% 80%, rgba(228, 233, 238, 0.5), transparent 44%),
+          linear-gradient(145deg, #ffffff 0%, #fbfbfa 48%, #eef1f4 100%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site {
+        position: relative;
+        display: grid;
+        width: 100vw;
+        height: 100dvh;
+        grid-template-rows: 104px 1fr 116px;
+        isolation: isolate;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: minmax(210px, 1fr) repeat(5, minmax(120px, 196px));
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.62);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand,
+      .nav-link {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        border-right: 1px solid var(--line);
+      }
+
+      .brand {
+        gap: 24px;
+        padding: 0 clamp(24px, 2.2vw, 42px);
+      }
+
+      .logo-image {
+        display: block;
+        width: clamp(56px, 5vw, 82px);
+        height: clamp(48px, 4.25vw, 70px);
+        object-fit: contain;
+        object-position: center;
+        flex: 0 0 auto;
+        filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.14));
+      }
+
+      .credit {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 9px 13px 10px;
+        border-radius: 999px;
+        background: rgba(8, 9, 11, 0.045);
+        box-shadow: inset 0 0 0 1px rgba(8, 9, 11, 0.035);
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1.12;
+        color: rgba(8, 9, 11, 0.64);
+      }
+
+      .nav-link {
+        justify-content: center;
+        font-size: clamp(17px, 1.25vw, 24px);
+        font-weight: 650;
+        transition:
+          opacity 180ms ease-out,
+          transform 180ms ease-out;
+      }
+
+      .nav-link:last-child {
+        border-right: 0;
+      }
+
+      .nav-link:hover,
+      .nav-link:focus-visible {
+        opacity: 0.62;
+        transform: translateY(-1px);
+      }
+
+      .nav-link:focus-visible,
+      .project-card:focus-visible {
+        outline: 2px solid rgba(8, 9, 11, 0.62);
+        outline-offset: 5px;
+      }
+
+      .nav-count {
+        margin-left: 5px;
+        font-size: 0.58em;
+        vertical-align: super;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        min-height: 0;
+        place-items: center;
+        perspective: var(--stage-depth);
+        perspective-origin: 56% 46%;
+      }
+
+      .gallery-shell {
+        position: relative;
+        width: min(1740px, 96vw);
+        height: min(700px, 66dvh);
+        contain: layout paint style;
+        cursor: default;
+        transform-style: preserve-3d;
+      }
+
+      .gallery-shell.is-targeting {
+        cursor: pointer;
+      }
+
+      .gallery {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        transform:
+          rotateX(var(--rx, 0deg))
+          rotateY(var(--ry, 0deg))
+          rotateZ(var(--rz, 0deg))
+          translate3d(0, 10px, 0);
+        transition: transform 360ms var(--ease-out);
+      }
+
+      .project-card {
+        --i: 0;
+        --count: 1;
+        --mid: calc((var(--count) - 1) / 2);
+        --from-mid: calc(var(--i) - var(--mid));
+        --wave: 0px;
+        --lift: 0px;
+        --spread: 0px;
+        --z: 0px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: var(--stack, 1);
+        display: block;
+        width: var(--card-w);
+        height: var(--card-h);
+        border-radius: 8px;
+        background: #f7f7f5;
+        opacity: 0;
+        overflow: visible;
+        backface-visibility: hidden;
+        pointer-events: none;
+        transform-origin: 50% 50%;
+        transform:
+          translate3d(
+            calc(-50% + var(--from-mid) * var(--card-gap) + var(--spread)),
+            calc(-50% + var(--lift) + 430px + var(--wave)),
+            calc(var(--from-mid) * -10px + var(--z) - 260px)
+          )
+          rotateY(-46deg)
+          rotateX(5deg)
+          scale(0.9);
+        transition:
+          transform 980ms var(--ease-out),
+          opacity 640ms var(--ease-out);
+        transition-delay: calc(var(--i) * 74ms);
+      }
+
+      .project-card.is-ready {
+        opacity: 1;
+        transform:
+          translate3d(
+            calc(-50% + var(--from-mid) * var(--card-gap) + var(--spread)),
+            calc(-50% + var(--lift)),
+            calc(var(--from-mid) * -10px + var(--z))
+          )
+          rotateY(var(--card-angle))
+          rotateX(0deg)
+          scale(1);
+      }
+
+      .card-surface {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: inherit;
+        background: #f7f7f5;
+        box-shadow:
+          0 22px 46px rgba(8, 9, 11, 0.1),
+          0 6px 14px rgba(8, 9, 11, 0.07),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+        transform: translateZ(0);
+        transition: box-shadow 190ms ease-out;
+      }
+
+      .project-card:focus-visible,
+      .project-card.is-hovered {
+        --lift: -58px;
+        --z: 0px;
+        z-index: 1000;
+        transition-delay: 0ms;
+      }
+
+      .project-card:focus-visible .card-surface,
+      .project-card.is-hovered .card-surface {
+        box-shadow:
+          0 30px 64px rgba(8, 9, 11, 0.13),
+          0 10px 22px rgba(8, 9, 11, 0.08),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+      }
+
+      .project-card:first-child .card-surface {
+        box-shadow:
+          0 18px 38px rgba(8, 9, 11, 0.075),
+          0 5px 12px rgba(8, 9, 11, 0.055),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+      }
+
+      .gallery.is-interacting .project-card {
+        transition-delay: 0ms;
+        transition-duration: 190ms, 190ms;
+      }
+
+      .card-surface img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: saturate(0.8) contrast(0.98);
+        transform: translateZ(0);
+        backface-visibility: hidden;
+      }
+
+      .card-frame {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #000;
+        pointer-events: none;
+        transform: scale(1.01);
+        transform-origin: center;
+      }
+
+      .card-surface::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.34), transparent 22%),
+          linear-gradient(180deg, transparent 62%, rgba(8, 9, 11, 0.14));
+        pointer-events: none;
+      }
+
+      .card-label {
+        position: absolute;
+        right: 12px;
+        bottom: 10px;
+        left: 12px;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(6px);
+        transition:
+          opacity 180ms ease-out,
+          transform 180ms ease-out;
+      }
+
+      .project-card:focus-visible .card-label,
+      .project-card.is-hovered .card-label {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .footer {
+        display: grid;
+        grid-template-columns: 70px 150px 1fr auto;
+        align-items: end;
+        gap: 34px;
+        padding: 0 clamp(28px, 3vw, 58px) 38px;
+        color: rgba(8, 9, 11, 0.78);
+      }
+
+      .issue {
+        display: grid;
+        width: 58px;
+        height: 70px;
+        place-items: center;
+        background: var(--ink);
+        color: #fff;
+        clip-path: polygon(0 0, 72% 0, 100% 24%, 100% 100%, 0 100%);
+        font-size: 12px;
+        font-weight: 760;
+        line-height: 1.15;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .footer-list {
+        display: grid;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 14px;
+        font-weight: 680;
+      }
+
+      .footer-title {
+        margin: 0 0 7px;
+        font-size: 14px;
+        font-weight: 760;
+      }
+
+      .footer-copy {
+        justify-self: end;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 760;
+      }
+
+      .preview {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        display: grid;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 180ms ease-out;
+      }
+
+      .preview.is-visible {
+        pointer-events: auto;
+        opacity: 1;
+      }
+
+      .preview-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .preview-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: grid;
+        width: 100vw;
+        height: 100dvh;
+        grid-template-rows: 78px 1fr;
+        overflow: hidden;
+        background: #fbfbfa;
+        box-shadow: 0 30px 90px rgba(8, 9, 11, 0.18);
+        transform:
+          translate3d(var(--preview-x, 0px), var(--preview-y, 0px), 0)
+          scale3d(var(--preview-sx, 1), var(--preview-sy, 1), 1);
+        transform-origin: top left;
+        transition: transform 620ms var(--ease-out);
+      }
+
+      .preview.is-open .preview-panel {
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+      }
+
+      .preview-bar {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: 18px;
+        padding: 0 clamp(22px, 3vw, 52px);
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .preview-title {
+        min-width: 0;
+      }
+
+      .preview-title strong,
+      .preview-title span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .preview-title strong {
+        font-size: 18px;
+        font-weight: 760;
+      }
+
+      .preview-title span {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .preview-link,
+      .preview-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        min-height: 42px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(8, 9, 11, 0.06);
+        color: var(--ink);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 720;
+        cursor: pointer;
+        transition:
+          opacity 160ms ease-out,
+          transform 160ms ease-out;
+      }
+
+      .preview-link {
+        padding: 0 16px;
+      }
+
+      .preview-close {
+        width: 42px;
+        padding: 0;
+      }
+
+      .preview-link:hover,
+      .preview-close:hover,
+      .preview-link:focus-visible,
+      .preview-close:focus-visible {
+        opacity: 0.68;
+        transform: translateY(-1px);
+      }
+
+      .preview-body {
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(135deg, #ffffff 0%, #f6f7f8 48%, #eceff2 100%);
+      }
+
+      .preview-frame {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+        opacity: 0;
+        transition: opacity 220ms ease-out;
+      }
+
+      .preview-shot {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+        opacity: 1;
+        transition: opacity 220ms ease-out;
+      }
+
+      .preview.is-loaded .preview-frame {
+        opacity: 1;
+      }
+
+      .preview.is-loaded .preview-shot {
+        opacity: 0;
+      }
+
+      .preview-empty {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+        color: rgba(8, 9, 11, 0.58);
+        font-size: 14px;
+        font-weight: 650;
+        text-align: center;
+      }
+
+      }
+
+      @media (max-width: 900px) {
+        body {
+          overflow: auto;
+        }
+
+        .site {
+          min-height: 100dvh;
+          height: auto;
+          grid-template-rows: auto 1fr auto;
+        }
+
+        .topbar {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .brand {
+          grid-column: 1 / -1;
+          min-height: 82px;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .nav-link {
+          min-height: 58px;
+          border-bottom: 1px solid var(--line);
+          font-size: 16px;
+        }
+
+        .hero {
+          min-height: 560px;
+          overflow: hidden;
+        }
+
+        .gallery-shell {
+          width: 100vw;
+          height: 520px;
+          transform: scale(0.86);
+        }
+
+        .footer {
+          grid-template-columns: 58px 1fr;
+          padding-bottom: 28px;
+        }
+
+        .footer-copy {
+          justify-self: start;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .gallery {
+          transition-duration: 1ms;
+        }
+
+        .project-card,
+        .card-label,
+        .nav-link {
+          transition-duration: 1ms;
+          transition-delay: 0ms;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="site">
+      <header class="topbar" aria-label="Site navigation">
+        <a class="brand" href="#" aria-label="Optical Portfolio home">
+          <img class="logo-image" src="assets/logo.png" alt="Codex Studio logo" />
+          <span class="credit">
+            <span>Created by</span>
+            <span>Codex Studio</span>
+          </span>
+        </a>
+        <a class="nav-link" href="#">Home</a>
+        <a class="nav-link" href="#">About</a>
+        <a class="nav-link" href="#">Services</a>
+        <a class="nav-link" href="#">Contact</a>
+        <a class="nav-link" href="#">Blog <sup class="nav-count">2</sup></a>
+      </header>
+
+      <main class="hero" aria-label="Interactive project gallery">
+        <section class="gallery-shell" aria-label="Project cards">
+          <div class="gallery" id="gallery"></div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="issue">No.<br />051</div>
+        <ul class="footer-list" aria-label="Social links">
+          <li><a href="https://x.com" target="_blank" rel="noreferrer">X / Twitter</a></li>
+          <li><a href="https://github.com" target="_blank" rel="noreferrer">Github</a></li>
+          <li><a href="https://discord.com" target="_blank" rel="noreferrer">Discord</a></li>
+        </ul>
+        <div>
+          <p class="footer-title">RED</p>
+          <ul class="footer-list" aria-label="Studio information">
+            <li>Web Designer &amp; Full Stack Developer</li>
+            <li><a href="mailto:hello@example.com">Get In Touch</a></li>
+          </ul>
+        </div>
+        <p class="footer-copy">&copy;2026 Codex Gallery</p>
+      </footer>
+
+      <aside class="preview" id="preview" aria-hidden="true">
+        <div class="preview-backdrop" data-preview-close></div>
+        <section class="preview-panel" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+          <header class="preview-bar">
+            <div class="preview-title">
+              <strong id="previewTitle">Project preview</strong>
+              <span id="previewUrl">Loading preview</span>
+            </div>
+            <a class="preview-link" id="previewExternal" href="#" target="_blank" rel="noopener noreferrer">Open Site</a>
+            <button class="preview-close" type="button" aria-label="Close preview" data-preview-close>&times;</button>
+          </header>
+          <div class="preview-body">
+            <div class="preview-empty" id="previewEmpty">Loading live website preview...</div>
+            <img class="preview-shot" id="previewShot" alt="" />
+            <iframe class="preview-frame" id="previewFrame" title="Website preview" loading="lazy"></iframe>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+
+    <script>
+      const PROJECTS = [
+        {
+          title: "DeepSeek HTML",
+          meta: "",
+          url: "deepseek_html_20260522_7ae4b1.html",
+          preview: "iframe",
+        },
+        { title: "Quiet Interior", meta: "dezeen.com", url: "https://www.dezeen.com" },
+        { title: "Studio Archive", meta: "behance.net", url: "https://www.behance.net" },
+        { title: "Material Index", meta: "dribbble.com", url: "https://dribbble.com" },
+        { title: "Light Room", meta: "framer.com", url: "https://www.framer.com" },
+        { title: "Blue Facade", meta: "webflow.com", url: "https://webflow.com" },
+        { title: "Paper System", meta: "siteinspire.com", url: "https://www.siteinspire.com" },
+        { title: "Glass Study", meta: "thefwa.com", url: "https://thefwa.com" },
+        { title: "Soft Horizon", meta: "cssdesignawards.com", url: "https://www.cssdesignawards.com" },
+        { title: "Open Frame", meta: "landingfolio.com", url: "https://www.landingfolio.com" },
+        { title: "Concrete Calm", meta: "minimal.gallery", url: "https://minimal.gallery" },
+        { title: "White System", meta: "godly.website", url: "https://godly.website" },
+        { title: "Product Plane", meta: "commercecream.com", url: "https://commercecream.com" },
+        { title: "Signal House", meta: "land-book.com", url: "https://land-book.com" },
+        { title: "Folded Light", meta: "calltoidea.com", url: "https://www.calltoidea.com" },
+      ];
+
+      const gallery = document.getElementById("gallery");
+      const galleryShell = gallery.closest(".gallery-shell");
+      const preview = document.getElementById("preview");
+      const previewPanel = preview.querySelector(".preview-panel");
+      const previewTitle = document.getElementById("previewTitle");
+      const previewUrl = document.getElementById("previewUrl");
+      const previewExternal = document.getElementById("previewExternal");
+      const previewFrame = document.getElementById("previewFrame");
+      const previewEmpty = document.getElementById("previewEmpty");
+      const previewShot = document.getElementById("previewShot");
+      const previewClose = preview.querySelector(".preview-close");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function getWebsiteShot(url, width = 900) {
+        return `https://image.thum.io/get/width/${width}/crop/1400/noanimate/${url}`;
+      }
+
+      function renderCardMedia(project) {
+        if (project.preview === "iframe") {
+          return `<iframe class="card-frame" src="${project.url}" title="${project.title} preview" loading="lazy"></iframe>`;
+        }
+
+        return `<img src="${getWebsiteShot(project.url)}" alt="${project.title} homepage preview" loading="eager" decoding="async" />`;
+      }
+
+      gallery.style.setProperty("--count", PROJECTS.length);
+      gallery.innerHTML = PROJECTS.map(
+        (project, index) => `
+          <a
+            class="project-card"
+            href="${project.url}"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-url="${project.url}"
+            style="--i:${index}; --count:${PROJECTS.length}; --stack:${PROJECTS.length - index}; --wave:${Math.sin(index * 1.08) * 92}px;"
+            aria-label="Open ${project.title}"
+          >
+            <span class="card-surface">
+              ${renderCardMedia(project)}
+              <span class="card-label">
+                <span>${project.title}</span>
+                ${project.meta ? `<span>${project.meta}</span>` : ""}
+              </span>
+            </span>
+          </a>
+        `,
+      ).join("");
+
+      requestAnimationFrame(() => {
+        const cards = [...document.querySelectorAll(".project-card")];
+        let activeIndex = -1;
+        let lastFocusedElement = null;
+        let previewLoadTimer = 0;
+
+        function setActiveCard(nextIndex) {
+          activeIndex = nextIndex;
+          gallery.classList.toggle("is-interacting", activeIndex !== -1);
+          galleryShell.classList.toggle("is-targeting", activeIndex !== -1);
+          cards.forEach((card, index) => {
+            card.classList.toggle("is-hovered", index === activeIndex);
+            if (activeIndex === -1) {
+              card.style.setProperty("--spread", "0px");
+              return;
+            }
+
+            const distance = index - activeIndex;
+            const direction = Math.sign(distance);
+            const falloff = Math.max(0, 1 - Math.abs(distance) * 0.12);
+            const spread = direction * 16 * falloff;
+            card.style.setProperty("--spread", `${spread}px`);
+          });
+        }
+
+        cards.forEach((card, index) => {
+          card.classList.add("is-ready");
+          card.addEventListener("focus", () => setActiveCard(index));
+          card.addEventListener("blur", () => setActiveCard(-1));
+          card.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            window.location.href = PROJECTS[index].url;
+          });
+        });
+
+
+        function openPreview(index, sourceCard) {
+          const project = PROJECTS[index];
+          const rect = sourceCard.getBoundingClientRect();
+          const sx = rect.width / window.innerWidth;
+          const sy = rect.height / window.innerHeight;
+
+          lastFocusedElement = document.activeElement;
+          clearTimeout(previewLoadTimer);
+          preview.classList.remove("is-open", "is-loaded");
+          preview.setAttribute("aria-hidden", "false");
+          previewTitle.textContent = project.title;
+          previewUrl.textContent = project.url;
+          previewExternal.href = project.url;
+          previewFrame.removeAttribute("src");
+          previewShot.src = getWebsiteShot(project.url, 1600);
+          previewShot.alt = `${project.title} homepage screenshot`;
+          previewEmpty.textContent = "Loading live website preview...";
+          previewPanel.style.setProperty("--preview-x", `${rect.left}px`);
+          previewPanel.style.setProperty("--preview-y", `${rect.top}px`);
+          previewPanel.style.setProperty("--preview-sx", sx);
+          previewPanel.style.setProperty("--preview-sy", sy);
+          preview.classList.add("is-visible");
+
+          requestAnimationFrame(() => {
+            preview.classList.add("is-open");
+            previewClose.focus({ preventScroll: true });
+            previewLoadTimer = window.setTimeout(() => {
+              previewFrame.src = project.url;
+              preview.classList.add("is-loaded");
+              previewEmpty.textContent =
+                "If this site blocks embedded previews, use Open Site.";
+            }, reducedMotion ? 0 : 420);
+          });
+        }
+
+        function closePreview() {
+          clearTimeout(previewLoadTimer);
+          preview.classList.remove("is-open", "is-loaded");
+          previewFrame.removeAttribute("src");
+          previewShot.removeAttribute("src");
+
+          window.setTimeout(() => {
+            preview.classList.remove("is-visible");
+            preview.setAttribute("aria-hidden", "true");
+            if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+              lastFocusedElement.focus({ preventScroll: true });
+            }
+          }, reducedMotion ? 1 : 220);
+        }
+
+        galleryShell.addEventListener(
+          "pointermove",
+          (event) => {
+            let closestIndex = -1;
+            let closestDistance = Infinity;
+
+            cards.forEach((card, index) => {
+              const rect = card.getBoundingClientRect();
+              const centerX = rect.left + rect.width / 2;
+              const centerY = rect.top + rect.height / 2;
+              const dx = Math.abs(event.clientX - centerX);
+              const dy = Math.abs(event.clientY - centerY);
+              const distance = dx * 0.72 + dy * 0.28;
+
+              if (dx < rect.width * 0.82 && dy < rect.height * 0.82 && distance < closestDistance) {
+                closestDistance = distance;
+                closestIndex = index;
+              }
+            });
+
+            setActiveCard(closestIndex);
+          },
+          { passive: true },
+        );
+
+        galleryShell.addEventListener("click", () => {
+          if (activeIndex === -1) {
+            return;
+          }
+
+          window.location.href = PROJECTS[activeIndex].url;
+        });
+
+        galleryShell.addEventListener("pointerleave", () => setActiveCard(-1));
+
+        preview.querySelectorAll("[data-preview-close]").forEach((control) => {
+          control.addEventListener("click", closePreview);
+        });
+
+        window.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && preview.classList.contains("is-visible")) {
+            closePreview();
+          }
+        });
+      });
+
+      if (!reducedMotion) {
+        const damp = 0.12;
+        const target = { x: 0, y: 0 };
+        const current = { x: 0, y: 0 };
+        let parallaxFrame = 0;
+        let isParallaxRunning = false;
+
+        window.addEventListener(
+          "pointermove",
+          (event) => {
+            target.x = (event.clientX / window.innerWidth - 0.5) * 2;
+            target.y = (event.clientY / window.innerHeight - 0.5) * 2;
+            if (!isParallaxRunning) {
+              isParallaxRunning = true;
+              parallaxFrame = requestAnimationFrame(animateParallax);
+            }
+          },
+          { passive: true },
+        );
+
+        function animateParallax() {
+          current.x += (target.x - current.x) * damp;
+          current.y += (target.y - current.y) * damp;
+
+          const diffX = Math.abs(target.x - current.x);
+          const diffY = Math.abs(target.y - current.y);
+          gallery.style.setProperty("--ry", `${current.x * -1.2}deg`);
+          gallery.style.setProperty("--rx", `${current.y * 0.6}deg`);
+          gallery.style.setProperty("--rz", `${current.x * 0.16}deg`);
+
+          if (diffX > 0.001 || diffY > 0.001) {
+            parallaxFrame = requestAnimationFrame(animateParallax);
+          } else {
+            isParallaxRunning = false;
+            cancelAnimationFrame(parallaxFrame);
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
+
+
+
+
