@@ -1,0 +1,1 @@
+:root{color-scheme:dark;background:#000}*{box-sizing:border-box}html,body,#app{width:100%;min-height:100%;margin:0;overflow:hidden;background:#000}body{min-height:100dvh}#app{min-height:100dvh;display:grid;place-items:center}canvas{display:block;width:100vmin;height:100vmin}
