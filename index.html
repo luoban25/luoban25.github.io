@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="AI Creative Lab — digital art, code and emotion." />
+    <meta name="theme-color" content="#f4f4f6" />
+    <title>WORKS — AI Creative Lab</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./css/tokens.css?v=20260730" />
+    <link rel="stylesheet" href="./css/global.css" />
+    <link rel="stylesheet" href="./css/layout.css?v=20260730b" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/pages.css?v=20260730f" />
+    <link rel="stylesheet" href="./css/responsive.css" />
+    <script src="./js/projects.js" defer></script>
+    <script src="./js/motion.js" defer></script>
+    <script src="./js/shared-ui.js?v=20260730d" defer></script>
+    <script src="./js/page-flow.js?v=20260730" defer></script>
+    <script src="./js/skills.js" defer></script>
+  </head>
+  <body data-page="works">
+    <div data-site-header data-active="works"></div>
+    <main class="home-flow page-enter" id="main-content">
+      <section class="page-shell works-page home-panel home-panel--works" id="works">
+        <div class="works-layout" aria-labelledby="works-title">
+          <aside class="brand-story">
+          <h1 class="brand-title" id="works-title">
+            <span>AI × CODE ×</span>
+            <span class="pixel-text">EMOTION.</span>
+          </h1>
+          <p class="brand-statement">CREATING NEW NARRATIVES<br />IN THE DIGITAL AGE.</p>
+          <p class="body-cn">用代码创造有情绪的数字艺术，<br />在算法与感知之间，寻找新的叙事方式。</p>
+          <button class="pro-access-button" type="button" data-pro-access>
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M9.2 1.5 3.7 8.2h3.5l-.5 6.3 5.6-7H8.8l.4-6Z" fill="currentColor" />
+            </svg>
+            <span>Get Pro Access</span>
+          </button>
+          </aside>
+
+        </div>
+      </section>
+
+      <section class="page-shell catalog-page home-panel home-panel--skills" id="skills" aria-labelledby="home-skills-title">
+        <div class="catalog-layout">
+          <aside class="catalog-sidebar">
+            <div>
+              <p class="eyebrow">CAPABILITY DIRECTORY</p>
+              <h2 class="catalog-title pixel-text" id="home-skills-title">SKILLS</h2>
+              <p class="catalog-tagline">TOOLS FOR<br />NEW NARRATIVES.</p>
+              <p class="body-cn">实验性的工具与系统，<br />探索代码与艺术的更多可能。</p>
+            </div>
+            <nav class="filter-list" data-skill-filters aria-label="Filter skills"></nav>
+          </aside>
+          <section class="skill-grid" data-skill-grid aria-live="polite" aria-label="Skills"></section>
+        </div>
+      </section>
+    </main>
+    <div data-site-footer></div>
+  </body>
+</html>

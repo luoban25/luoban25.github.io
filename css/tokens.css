@@ -1,0 +1,57 @@
+@font-face {
+  font-family: "KeepCalm";
+  src: url("../fonts/KeepCalm-Medium.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Musicnet";
+  src: url("../fonts/MUSICNET.ttf") format("truetype");
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --page-bg: #f4f4f6;
+  --surface: #ffffff;
+  --surface-soft: #f7f7f9;
+  --preview-bg: #f1f1f4;
+  --ink: #090909;
+  --muted: #72727a;
+  --soft-muted: #a0a0a8;
+  --line: rgba(15, 23, 42, 0.08);
+  --line-strong: rgba(15, 23, 42, 0.14);
+  --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.055);
+  --radius-page: 18px;
+  --radius-card: 14px;
+  --radius-inner: 10px;
+  --radius-pill: 999px;
+  --site-width: 1500px;
+  --gutter: clamp(28px, 4vw, 64px);
+  --grid-gap: clamp(18px, 1.6vw, 28px);
+  --header-height: 80px;
+  --z-base: 0;
+  --z-decor: 1;
+  --z-content: 10;
+  --z-header: 30;
+  --z-modal: 50;
+  font-family: "KeepCalm", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page-bg: #0b0c0e;
+  --surface: #131417;
+  --surface-soft: #18191d;
+  --preview-bg: #101115;
+  --ink: #f4f4f6;
+  --muted: #9a9ca4;
+  --soft-muted: #747780;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.17);
+  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.18);
+}

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wave Physics Loader V3</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --surface: #f4f4f6;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --surface: #141416;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--surface);
+      }
+
+      body {
+        display: grid;
+        place-items: stretch;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="wave"
+      role="img"
+      aria-label="A ball travelling across a responsive wave of physics-driven columns"
+    ></canvas>
+
+    <script>
+      (() => {
+        const canvas = document.querySelector("#wave");
+        const context = canvas.getContext("2d");
+        const params = new URLSearchParams(window.location.search);
+        const count = 15;
+        const duration = 4;
+        const residual = new Float64Array(count);
+        const velocity = new Float64Array(count);
+        const acceleration = new Float64Array(count);
+
+        let theme = params.get("theme") === "dark" ? "dark" : "light";
+        let width = 600;
+        let height = 400;
+        let scale = 1;
+        let elapsed = 0;
+        let previousTime = performance.now();
+        let previousContact = 0;
+        let previousBallIndex = 0;
+        let frameId = 0;
+
+        document.documentElement.dataset.theme = theme;
+
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+        const triangle = (value) => {
+          const phase = value % 2;
+          return phase <= 1 ? phase : 2 - phase;
+        };
+
+        const bounce = (progress) => {
+          const local = (progress * 4) % 1;
+          return 4 * local * (1 - local);
+        };
+
+        const layout = () => {
+          const rectangle = canvas.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+          width = Math.max(1, rectangle.width);
+          height = Math.max(1, rectangle.height);
+          scale = Math.max(0.42, Math.min(width / 600, height / 400));
+
+          canvas.width = Math.round(width * dpr);
+          canvas.height = Math.round(height * dpr);
+          context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+
+        const metrics = () => {
+          const barWidth = 12 * scale;
+          const gap = 8 * scale;
+          const spacing = barWidth + gap;
+          const totalWidth = count * barWidth + (count - 1) * gap;
+
+          return {
+            barWidth,
+            gap,
+            spacing,
+            totalWidth,
+            left: (width - totalWidth) / 2,
+            ground: height * 0.72,
+            baseHeight: 16 * scale,
+            wavePeak: 48 * scale,
+            ballRadius: 6 * scale,
+            bounceAmplitude: 16 * scale,
+            residualAmplitude: 8 * scale,
+          };
+        };
+
+        const designedHeight = (index, ballIndex, contact, values) => {
+          const distance = Math.abs(index - ballIndex);
+          const wave =
+            distance < 3 ? Math.cos((distance / 3) * (Math.PI / 2)) : 0;
+          const indentWeight =
+            distance < 1.35
+              ? Math.cos((distance / 1.35) * (Math.PI / 2))
+              : 0;
+
+          return (
+            values.baseHeight +
+            wave * values.wavePeak -
+            indentWeight * contact * 8 * scale
+          );
+        };
+
+        const interpolatedHeight = (ballIndex, contact, values) => {
+          const leftIndex = clamp(Math.floor(ballIndex), 0, count - 1);
+          const rightIndex = clamp(leftIndex + 1, 0, count - 1);
+          const fraction = clamp(ballIndex - leftIndex, 0, 1);
+          const leftHeight =
+            designedHeight(leftIndex, ballIndex, contact, values) +
+            residual[leftIndex];
+          const rightHeight =
+            designedHeight(rightIndex, ballIndex, contact, values) +
+            residual[rightIndex];
+
+          return leftHeight * (1 - fraction) + rightHeight * fraction;
+        };
+
+        const injectImpulse = (ballIndex, intensity) => {
+          const center = Math.round(ballIndex);
+
+          for (let offset = -2; offset <= 2; offset += 1) {
+            const index = center + offset;
+            if (index < 0 || index >= count) continue;
+
+            const weight = Math.exp(-(offset * offset) / 1.8);
+            velocity[index] += 58 * scale * intensity * weight;
+          }
+        };
+
+        const updatePhysics = (delta, values) => {
+          for (let index = 0; index < count; index += 1) {
+            const current = residual[index];
+            const left = index > 0 ? residual[index - 1] : residual[1];
+            const right =
+              index < count - 1 ? residual[index + 1] : residual[count - 2];
+            const laplacian = left + right - 2 * current;
+
+            acceleration[index] =
+              24 * laplacian - 78 * current - 11 * velocity[index];
+          }
+
+          for (let index = 0; index < count; index += 1) {
+            velocity[index] += acceleration[index] * delta;
+            residual[index] += velocity[index] * delta;
+            residual[index] = clamp(
+              residual[index],
+              -values.residualAmplitude,
+              values.residualAmplitude,
+            );
+          }
+        };
+
+        const roundedRectangle = (x, y, rectWidth, rectHeight, radius) => {
+          const safeRadius = Math.min(radius, rectWidth / 2, rectHeight / 2);
+
+          context.beginPath();
+          context.moveTo(x + safeRadius, y);
+          context.arcTo(
+            x + rectWidth,
+            y,
+            x + rectWidth,
+            y + rectHeight,
+            safeRadius,
+          );
+          context.arcTo(
+            x + rectWidth,
+            y + rectHeight,
+            x,
+            y + rectHeight,
+            safeRadius,
+          );
+          context.arcTo(x, y + rectHeight, x, y, safeRadius);
+          context.arcTo(x, y, x + rectWidth, y, safeRadius);
+          context.closePath();
+        };
+
+        const mix = (start, end, amount) =>
+          Math.round(start + (end - start) * clamp(amount, 0, 1));
+
+        const draw = (ballIndex, ballBounce, contact, values) => {
+          context.clearRect(0, 0, width, height);
+
+          const isLight = theme === "light";
+          const base = isLight ? [212, 212, 216] : [39, 39, 42];
+          const active = isLight ? [24, 24, 27] : [244, 244, 245];
+
+          for (let index = 0; index < count; index += 1) {
+            const designed = designedHeight(
+              index,
+              ballIndex,
+              contact,
+              values,
+            );
+            const barHeight = Math.max(4 * scale, designed + residual[index]);
+            const x = values.left + index * values.spacing;
+            const y = values.ground - barHeight;
+            const energy = clamp(
+              (barHeight - values.baseHeight) / values.wavePeak,
+              0,
+              1,
+            );
+
+            context.fillStyle = `rgb(${mix(base[0], active[0], energy)}, ${mix(
+              base[1],
+              active[1],
+              energy,
+            )}, ${mix(base[2], active[2], energy)})`;
+
+            roundedRectangle(
+              x,
+              y,
+              values.barWidth,
+              barHeight,
+              values.barWidth / 2,
+            );
+            context.fill();
+          }
+
+          const ballX =
+            values.left +
+            ballIndex * values.spacing +
+            values.barWidth / 2;
+          const surfaceY =
+            values.ground -
+            interpolatedHeight(ballIndex, contact, values);
+          const ballY =
+            surfaceY -
+            values.ballRadius -
+            ballBounce * values.bounceAmplitude;
+
+          context.save();
+          context.translate(ballX, ballY);
+          context.scale(1 + contact * 0.18, 1 - contact * 0.14);
+          context.shadowColor = isLight
+            ? "rgba(0, 0, 0, 0.18)"
+            : "rgba(255, 255, 255, 0.16)";
+          context.shadowBlur = 10 * scale;
+          context.shadowOffsetY = 4 * scale;
+          context.beginPath();
+          context.arc(0, 0, values.ballRadius, 0, Math.PI * 2);
+          context.fillStyle = isLight ? "#18181b" : "#fafafa";
+          context.fill();
+          context.restore();
+        };
+
+        const frame = (time) => {
+          const delta = Math.min(
+            0.032,
+            Math.max(0, (time - previousTime) / 1000),
+          );
+          const values = metrics();
+
+          previousTime = time;
+          elapsed += delta;
+
+          const progress = triangle((elapsed / duration) * 2);
+          const ballIndex = progress * (count - 1);
+          const ballBounce = bounce(progress);
+          const contact = 1 - ballBounce;
+          const contactDelta = contact - previousContact;
+
+          if (
+            contactDelta > 0.35 &&
+            Math.abs(ballIndex - previousBallIndex) > 0.16
+          ) {
+            injectImpulse(ballIndex, clamp(contactDelta, 0, 1));
+            previousBallIndex = ballIndex;
+          }
+
+          previousContact = contact;
+
+          const steps = Math.max(1, Math.ceil(delta / (1 / 180)));
+          const subDelta = delta / steps;
+
+          for (let step = 0; step < steps; step += 1) {
+            updatePhysics(subDelta, values);
+          }
+
+          draw(ballIndex, ballBounce, contact, values);
+          frameId = requestAnimationFrame(frame);
+        };
+
+        const resizeObserver = new ResizeObserver(layout);
+        resizeObserver.observe(canvas);
+        layout();
+        frameId = requestAnimationFrame(frame);
+
+        window.addEventListener("message", (event) => {
+          if (
+            event.data?.type === "theme" &&
+            (event.data.theme === "light" || event.data.theme === "dark")
+          ) {
+            theme = event.data.theme;
+            document.documentElement.dataset.theme = theme;
+          }
+        });
+
+        window.addEventListener("beforeunload", () => {
+          cancelAnimationFrame(frameId);
+          resizeObserver.disconnect();
+        });
+      })();
+    </script>
+  </body>
+</html>

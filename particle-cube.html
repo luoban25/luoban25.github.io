@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const particleCubeParams = new URLSearchParams(window.location.search);
+        if (particleCubeParams.get('theme') === 'light') {
+            document.documentElement.dataset.theme = 'light';
+        }
+    </script>
+    <title>粒子魔方实验室</title>
+    <style>
+        :root {
+            --ink: #ecf7ff;
+            --muted: rgba(255, 255, 255, 0.52);
+            --line: rgba(255, 255, 255, 0.2);
+            --panel: rgba(0, 0, 0, 0.74);
+            --cyan: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: #000000;
+            color: var(--ink);
+            font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+        }
+
+        :root[data-theme="light"],
+        :root[data-theme="light"] body {
+            background: #f4f4f6;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.045), transparent 42%);
+            z-index: 1;
+        }
+
+        :root[data-theme="light"] body::before {
+            background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.035), transparent 42%);
+        }
+
+        #scene {
+            position: fixed;
+            inset: 0;
+        }
+
+        canvas { display: block; cursor: grab; }
+        canvas:active { cursor: grabbing; }
+
+        .brand {
+            position: fixed;
+            top: 30px;
+            left: 34px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .eyebrow {
+            margin-bottom: 7px;
+            color: var(--cyan);
+            font: 600 10px/1 "Consolas", monospace;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            font: 300 clamp(22px, 3vw, 38px)/1.05 "Microsoft YaHei UI", sans-serif;
+            letter-spacing: 0.08em;
+        }
+
+        .counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            color: var(--muted);
+            font: 12px/1 "Consolas", monospace;
+        }
+
+        .counter::before {
+            content: "";
+            width: 28px;
+            height: 1px;
+            background: var(--cyan);
+            box-shadow: 0 0 8px var(--cyan);
+        }
+
+        .panel {
+            position: fixed;
+            right: 28px;
+            top: 50%;
+            width: 214px;
+            padding: 18px;
+            z-index: 3;
+            transform: translateY(-50%);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+        }
+
+        .panel::before {
+            content: "CONTROL / 01";
+            display: block;
+            margin-bottom: 14px;
+            color: var(--muted);
+            font: 10px/1 "Consolas", monospace;
+            letter-spacing: 0.18em;
+        }
+
+        .move-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
+        }
+
+        button {
+            min-height: 42px;
+            border: 1px solid var(--line);
+            background: rgba(163, 220, 246, 0.055);
+            color: var(--ink);
+            font: 600 13px/1 "Consolas", monospace;
+            cursor: pointer;
+            transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.72);
+            background: rgba(255, 255, 255, 0.13);
+            color: #fff;
+        }
+
+        button:active:not(:disabled) { transform: translateY(0); }
+        button:disabled { cursor: wait; opacity: 0.42; }
+
+        .wide {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .primary {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.11);
+        }
+
+        .hint {
+            position: fixed;
+            left: 34px;
+            bottom: 28px;
+            z-index: 3;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.8;
+            letter-spacing: 0.06em;
+            pointer-events: none;
+        }
+
+        .status {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            z-index: 3;
+            transform: translateX(-50%);
+            color: rgba(225, 243, 251, 0.72);
+            font: 11px/1 "Consolas", monospace;
+            letter-spacing: 0.12em;
+            white-space: nowrap;
+        }
+
+        .status::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-right: 9px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 10px #ffffff;
+        }
+
+        .brand, .panel, .hint, .status { display: none; }
+
+        @media (max-width: 720px) {
+            .brand { top: 20px; left: 20px; }
+            .panel {
+                top: auto;
+                right: 14px;
+                bottom: 14px;
+                left: 14px;
+                width: auto;
+                padding: 12px;
+                transform: none;
+            }
+            .panel::before, .hint, .status { display: none; }
+            .move-grid { grid-template-columns: repeat(6, 1fr); }
+            .wide { width: calc(50% - 4px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="scene" aria-label="可交互的三维粒子魔方"></div>
+
+    <header class="brand">
+        <div class="eyebrow">Particle mechanics</div>
+        <h1>粒子魔方</h1>
+        <div class="counter"><span id="moveCount">000</span> MOVES</div>
+    </header>
+
+    <aside class="panel" aria-label="魔方控制面板">
+        <div class="move-grid">
+            <button data-move="R" title="右层顺时针">R</button>
+            <button data-move="L" title="左层顺时针">L</button>
+            <button data-move="U" title="上层顺时针">U</button>
+            <button data-move="D" title="下层顺时针">D</button>
+            <button data-move="F" title="前层顺时针">F</button>
+            <button data-move="B" title="后层顺时针">B</button>
+            <button data-move="R'" title="右层逆时针">R′</button>
+            <button data-move="U'" title="上层逆时针">U′</button>
+            <button data-move="F'" title="前层逆时针">F′</button>
+        </div>
+        <button id="scramble" class="wide primary">随机打乱</button>
+        <button id="reset" class="wide">复原魔方</button>
+    </aside>
+
+    <div class="hint">拖拽旋转视角<br>滚轮调整远近<br>键盘 R L U D F B 转动</div>
+    <div class="status" id="status">SYSTEM READY</div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        const sceneHost = document.getElementById('scene');
+        const statusEl = document.getElementById('status');
+        const moveCountEl = document.getElementById('moveCount');
+        const controls = [...document.querySelectorAll('button')];
+        const lightMode = document.documentElement.dataset.theme === 'light';
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(lightMode ? 0xf4f4f6 : 0x000000, 0.055);
+
+        const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 100);
+        camera.position.set(6.2, 5.1, 7.8);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        sceneHost.appendChild(renderer.domElement);
+
+        const world = new THREE.Group();
+        world.rotation.set(-0.12, 0.18, 0);
+        scene.add(world);
+
+        const palette = {
+            body: new THREE.Color(lightMode ? 0x080808 : 0x252525),
+            edge: new THREE.Color(lightMode ? 0x202020 : 0x888888),
+            R: new THREE.Color(lightMode ? 0x000000 : 0xffffff),
+            L: new THREE.Color(lightMode ? 0x000000 : 0xffffff),
+            U: new THREE.Color(lightMode ? 0x000000 : 0xffffff),
+            D: new THREE.Color(lightMode ? 0x000000 : 0xffffff),
+            F: new THREE.Color(lightMode ? 0x000000 : 0xffffff),
+            B: new THREE.Color(lightMode ? 0x000000 : 0xffffff)
+        };
+
+        const cubies = [];
+        const gap = 1.08;
+        const half = 0.44;
+        const pointsPerFace = 300;
+        let moveCount = 0;
+        let busy = false;
+        let moveQueue = [];
+        const loopSequence = ['R', 'U', "R'", "U'"];
+        let loopIndex = 0;
+
+        function addFaceParticles(positions, colors, axis, side, color, inset = 0) {
+            for (let i = 0; i < pointsPerFace; i++) {
+                const a = (Math.random() * 2 - 1) * (half - inset);
+                const b = (Math.random() * 2 - 1) * (half - inset);
+                const jitter = (Math.random() - 0.5) * 0.025;
+                const p = [0, 0, 0];
+                p[axis] = side * half + jitter;
+                p[(axis + 1) % 3] = a;
+                p[(axis + 2) % 3] = b;
+                positions.push(...p);
+                const shade = 0.72 + Math.random() * 0.28;
+                colors.push(color.r * shade, color.g * shade, color.b * shade);
+            }
+        }
+
+        function makeCubie(x, y, z) {
+            const positions = [];
+            const colors = [];
+
+            addFaceParticles(positions, colors, 0, 1, x === 1 ? palette.R : palette.body, x === 1 ? 0.025 : 0);
+            addFaceParticles(positions, colors, 0, -1, x === -1 ? palette.L : palette.body, x === -1 ? 0.025 : 0);
+            addFaceParticles(positions, colors, 1, 1, y === 1 ? palette.U : palette.body, y === 1 ? 0.025 : 0);
+            addFaceParticles(positions, colors, 1, -1, y === -1 ? palette.D : palette.body, y === -1 ? 0.025 : 0);
+            addFaceParticles(positions, colors, 2, 1, z === 1 ? palette.F : palette.body, z === 1 ? 0.025 : 0);
+            addFaceParticles(positions, colors, 2, -1, z === -1 ? palette.B : palette.body, z === -1 ? 0.025 : 0);
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.032,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.92,
+                blending: lightMode ? THREE.NormalBlending : THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true
+            });
+
+            const points = new THREE.Points(geometry, material);
+            points.position.set(x * gap, y * gap, z * gap);
+            points.userData.coord = new THREE.Vector3(x, y, z);
+            cubies.push(points);
+            world.add(points);
+        }
+
+        function buildCube() {
+            for (let x = -1; x <= 1; x++) {
+                for (let y = -1; y <= 1; y++) {
+                    for (let z = -1; z <= 1; z++) makeCubie(x, y, z);
+                }
+            }
+        }
+
+        function addAtmosphere() {
+            const count = 2200;
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const radius = 7 + Math.random() * 14;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = radius * Math.cos(phi);
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({
+                color: lightMode ? 0x000000 : 0xffffff,
+                size: 0.012,
+                transparent: true,
+                opacity: lightMode ? 0.12 : 0.2,
+                blending: lightMode ? THREE.NormalBlending : THREE.AdditiveBlending
+            });
+            scene.add(new THREE.Points(geometry, material));
+        }
+
+        const moves = {
+            R: { axis: 'x', layer: 1, angle: -Math.PI / 2 },
+            L: { axis: 'x', layer: -1, angle: Math.PI / 2 },
+            U: { axis: 'y', layer: 1, angle: -Math.PI / 2 },
+            D: { axis: 'y', layer: -1, angle: Math.PI / 2 },
+            F: { axis: 'z', layer: 1, angle: -Math.PI / 2 },
+            B: { axis: 'z', layer: -1, angle: Math.PI / 2 }
+        };
+
+        function setControlsDisabled(value) {
+            controls.forEach(button => { button.disabled = value; });
+        }
+
+        function rotateCoordinate(vector, axis, angle) {
+            const matrix = new THREE.Matrix4();
+            const direction = axis === 'x' ? new THREE.Vector3(1, 0, 0)
+                : axis === 'y' ? new THREE.Vector3(0, 1, 0)
+                : new THREE.Vector3(0, 0, 1);
+            matrix.makeRotationAxis(direction, angle);
+            vector.applyMatrix4(matrix);
+            vector.set(Math.round(vector.x), Math.round(vector.y), Math.round(vector.z));
+        }
+
+        function enqueueMove(notation, countMove = true) {
+            moveQueue.push({ notation, countMove });
+            runQueue();
+        }
+
+        async function runQueue() {
+            if (busy || moveQueue.length === 0) return;
+            busy = true;
+            setControlsDisabled(true);
+            const item = moveQueue.shift();
+            await performMove(item.notation, item.countMove);
+            busy = false;
+            if (moveQueue.length === 0) setControlsDisabled(false);
+            runQueue();
+        }
+
+        function performMove(notation, countMove) {
+            return new Promise(resolve => {
+                const inverse = notation.endsWith("'");
+                const key = notation[0];
+                const config = moves[key];
+                const angle = config.angle * (inverse ? -1 : 1);
+                const selected = cubies.filter(cubie => Math.round(cubie.userData.coord[config.axis]) === config.layer);
+                const pivot = new THREE.Group();
+                world.add(pivot);
+                selected.forEach(cubie => pivot.attach(cubie));
+
+                statusEl.textContent = `ROTATING ${notation}`;
+                const start = performance.now();
+                const duration = 270;
+
+                function step(now) {
+                    const raw = Math.min((now - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - raw, 3);
+                    pivot.rotation[config.axis] = angle * eased;
+                    if (raw < 1) {
+                        requestAnimationFrame(step);
+                        return;
+                    }
+
+                    pivot.rotation[config.axis] = angle;
+                    pivot.updateMatrixWorld(true);
+                    selected.forEach(cubie => {
+                        world.attach(cubie);
+                        rotateCoordinate(cubie.userData.coord, config.axis, angle);
+                        cubie.position.copy(cubie.userData.coord).multiplyScalar(gap);
+                        cubie.position.set(Math.round(cubie.position.x * 1000) / 1000, Math.round(cubie.position.y * 1000) / 1000, Math.round(cubie.position.z * 1000) / 1000);
+                        cubie.rotation.set(
+                            Math.round(cubie.rotation.x / (Math.PI / 2)) * Math.PI / 2,
+                            Math.round(cubie.rotation.y / (Math.PI / 2)) * Math.PI / 2,
+                            Math.round(cubie.rotation.z / (Math.PI / 2)) * Math.PI / 2
+                        );
+                    });
+                    world.remove(pivot);
+
+                    if (countMove) {
+                        moveCount++;
+                        moveCountEl.textContent = String(moveCount).padStart(3, '0');
+                    }
+                    statusEl.textContent = moveQueue.length ? `${moveQueue.length} MOVES QUEUED` : 'AUTO LOOP';
+                    resolve();
+                }
+                requestAnimationFrame(step);
+            });
+        }
+
+        function scramble() {
+            if (busy || moveQueue.length) return;
+            const keys = Object.keys(moves);
+            let previous = '';
+            for (let i = 0; i < 18; i++) {
+                let key;
+                do { key = keys[Math.floor(Math.random() * keys.length)]; } while (key === previous);
+                previous = key;
+                enqueueMove(key + (Math.random() > 0.5 ? "'" : ''), true);
+            }
+        }
+
+        function resetCube() {
+            moveQueue = [];
+            cubies.forEach(cubie => {
+                world.remove(cubie);
+                cubie.geometry.dispose();
+                cubie.material.dispose();
+            });
+            cubies.length = 0;
+            moveCount = 0;
+            moveCountEl.textContent = '000';
+            buildCube();
+            statusEl.textContent = 'AUTO LOOP';
+        }
+
+        document.querySelectorAll('[data-move]').forEach(button => {
+            button.addEventListener('click', () => enqueueMove(button.dataset.move));
+        });
+        document.getElementById('scramble').addEventListener('click', scramble);
+        document.getElementById('reset').addEventListener('click', resetCube);
+
+        window.addEventListener('keydown', event => {
+            const key = event.key.toUpperCase();
+            if (!moves[key] || event.repeat) return;
+            enqueueMove(key + (event.shiftKey ? "'" : ''));
+        });
+
+        let dragging = false;
+        let lastX = 0;
+        let lastY = 0;
+        let targetRotX = world.rotation.x;
+        let targetRotY = world.rotation.y;
+        let cameraDistance = 10.7;
+
+        renderer.domElement.addEventListener('pointerdown', event => {
+            dragging = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+            renderer.domElement.setPointerCapture(event.pointerId);
+        });
+        renderer.domElement.addEventListener('pointermove', event => {
+            if (!dragging) return;
+            targetRotY += (event.clientX - lastX) * 0.008;
+            targetRotX += (event.clientY - lastY) * 0.008;
+            targetRotX = Math.max(-1.25, Math.min(1.25, targetRotX));
+            lastX = event.clientX;
+            lastY = event.clientY;
+        });
+        renderer.domElement.addEventListener('pointerup', () => { dragging = false; });
+        renderer.domElement.addEventListener('wheel', event => {
+            cameraDistance = Math.max(7.2, Math.min(15, cameraDistance + event.deltaY * 0.006));
+        }, { passive: true });
+
+        buildCube();
+        addAtmosphere();
+
+        // The four-move sequence returns to the solved state after six cycles.
+        setInterval(() => {
+            if (!busy && moveQueue.length === 0 && !dragging) {
+                enqueueMove(loopSequence[loopIndex], false);
+                loopIndex = (loopIndex + 1) % loopSequence.length;
+            }
+        }, 760);
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            if (!dragging) {
+                targetRotY += 0.0017;
+                targetRotX = -0.12 + Math.sin(time * 0.32) * 0.16;
+            }
+            world.rotation.x += (targetRotX - world.rotation.x) * 0.08;
+            world.rotation.y += (targetRotY - world.rotation.y) * 0.08;
+            world.position.y = Math.sin(time * 0.7) * 0.07;
+
+            camera.position.set(cameraDistance * 0.52, cameraDistance * 0.42, cameraDistance * 0.72);
+            camera.lookAt(0, 0, 0);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+    </script>
+</body>
+</html>

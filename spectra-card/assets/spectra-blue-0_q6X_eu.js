@@ -1,0 +1,1 @@
+import{j as e,S as t,c as a,r}from"./index-C0fSA6dq.js";function s(){return e.jsxs("main",{className:"app",children:[e.jsx("div",{className:"app-ambient","aria-hidden":"true"}),e.jsx(t,{speed:1.25,intensity:1.65,fluidScale:1.28,interactive:!0,palette:"ocean"})]})}a.createRoot(document.getElementById("root")).render(e.jsx(r.StrictMode,{children:e.jsx(s,{})}));

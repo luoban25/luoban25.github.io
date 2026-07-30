@@ -1,0 +1,248 @@
+.round-text-action,
+.text-link,
+.pill-button,
+.project-adjacent a,
+.contact-grid a {
+  display: inline-flex;
+  align-items: center;
+}
+
+.round-text-action {
+  width: max-content;
+  gap: 14px;
+  font-size: 10px;
+}
+
+.round-arrow,
+.circle-arrow {
+  display: grid;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--surface);
+  background: var(--ink);
+  place-items: center;
+}
+
+.text-link {
+  width: max-content;
+  padding-bottom: 6px;
+  gap: 16px;
+  border-bottom: 1px solid currentColor;
+  font-size: 9px;
+}
+
+.text-link span,
+.spectra-study__link,
+.project-adjacent span {
+  transition: transform 160ms ease-out;
+}
+
+.text-link:hover span,
+.text-link:focus-visible span,
+.spectra-study__link:hover,
+.spectra-study__link:focus-visible {
+  transform: translateX(3px);
+}
+
+.pill-button {
+  min-height: 44px;
+  width: max-content;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-pill);
+  color: var(--surface);
+  background: var(--ink);
+  font-size: 9px;
+}
+
+.pill-button:hover,
+.pill-button:focus-visible {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.page-number {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.project-meta {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.7;
+}
+
+.selected-card,
+.skill-card,
+.spectra-study,
+.project-detail__viewer,
+.info-list article,
+.contact-grid a {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.selected-card iframe,
+.selected-card img,
+.skill-card iframe,
+.skill-card img,
+.spectra-study iframe,
+.project-detail__viewer iframe,
+.project-detail__viewer img {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.selected-card img,
+.skill-card img,
+.project-detail__viewer img {
+  object-fit: cover;
+}
+
+.filter-list {
+  display: grid;
+  gap: 7px;
+}
+
+.filter-button {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 9px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filter-button > span {
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.filter-button:hover,
+.filter-button:focus-visible {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.filter-button.is-active {
+  color: var(--surface);
+  background: var(--ink);
+}
+
+.filter-button.is-active > span {
+  background: currentColor;
+}
+
+.filterable-card {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.is-filtering .filterable-card {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.graphic-preview {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: #ffffff;
+  background: #0c0d10;
+  place-items: center;
+}
+
+.graphic-preview--wormhole span {
+  position: relative;
+  z-index: var(--z-content);
+  font-family: "Musicnet", sans-serif;
+  font-size: clamp(28px, 2.4vw, 44px);
+}
+
+.graphic-preview--wormhole i {
+  position: absolute;
+  width: 52%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 50%;
+}
+
+.graphic-preview--wormhole i:last-child {
+  width: 74%;
+  border-style: dashed;
+  transform: rotate(22deg);
+}
+
+.graphic-preview--dropdown {
+  padding: 18px;
+  align-content: center;
+  justify-items: stretch;
+}
+
+.graphic-preview--dropdown label {
+  margin-bottom: 10px;
+  color: #9a9da5;
+  font-size: 7px;
+}
+
+.graphic-preview--dropdown select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 38px 0 12px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 8px;
+  color: #ffffff;
+  background: #15171c;
+  font-size: 8px;
+  appearance: none;
+}
+
+.graphic-preview--dropdown > span {
+  position: absolute;
+  right: 30px;
+  bottom: calc(50% - 13px);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.empty-state {
+  display: grid;
+  min-height: 60vh;
+  align-content: center;
+  justify-items: start;
+}
+
+.empty-state h1 {
+  margin: 22px 0;
+  font-size: clamp(44px, 7vw, 100px);
+}
+
+.empty-state p:not(.eyebrow) {
+  margin-bottom: 28px;
+  color: var(--muted);
+}

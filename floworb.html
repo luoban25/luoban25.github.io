@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowOrb | Interactive Shader Orb</title>
+  <script src="/vendor/react.production.min.js"></script>
+  <script src="/vendor/react-dom.production.min.js"></script>
+  <script src="/vendor/babel.min.js"></script>
+  <script src="/vendor/three.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #020617;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, 2vmin, 20px);
+      padding: clamp(6px, 2vmin, 20px);
+      overflow: hidden;
+    }
+    #root {
+      display: flex;
+      width: 100%;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, 2vmin, 20px);
+    }
+    .orb-wrapper {
+      width: min(600px, 62vmin);
+      height: min(600px, 62vmin);
+      border-radius: 50%;
+      overflow: hidden;
+      background: transparent;
+      box-shadow: none;
+      border: none;
+    }
+    .orb-wrapper > div,
+    .orb-wrapper canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: clamp(5px, 1.4vmin, 14px);
+      min-width: min(240px, 30vw);
+    }
+    button {
+      background: #000000;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      padding: clamp(6px, 1.4vmin, 12px) clamp(12px, 3vmin, 28px);
+      border-radius: 0;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: clamp(9px, 1.7vmin, 15px);
+      transition: color 120ms, background-color 120ms;
+      box-shadow: none;
+    }
+    button:hover {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: none;
+      transform: none;
+    }
+    .play-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .control-icon {
+      position: relative;
+      display: inline-block;
+      flex: 0 0 auto;
+      color: currentColor;
+    }
+    .control-icon.play {
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid currentColor;
+    }
+    .control-icon.pause {
+      width: 12px;
+      height: 14px;
+    }
+    .control-icon.pause::before,
+    .control-icon.pause::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: currentColor;
+    }
+    .control-icon.pause::before {
+      left: 1px;
+    }
+    .control-icon.pause::after {
+      right: 1px;
+    }
+    .intensity-group {
+      display: grid;
+      gap: 6px;
+    }
+    .intensity-label {
+      color: #ffffff;
+      font-size: clamp(8px, 1.4vmin, 12px);
+      letter-spacing: 0.04em;
+    }
+    .intensity-presets {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      padding: 0;
+      background: #000000;
+    }
+    .intensity-btn {
+      min-width: 72px;
+      padding: clamp(5px, 1vmin, 9px) clamp(8px, 2vmin, 18px);
+      font-size: clamp(8px, 1.5vmin, 14px);
+      background: #000000;
+      color: #ffffff;
+      box-shadow: none;
+    }
+    .intensity-btn:hover {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: none;
+      transform: none;
+    }
+    .intensity-btn.active {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: none;
+    }
+    .is-embed body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(82px, 30vw, 120px);
+      gap: 0;
+      padding: 0;
+      background: #000000;
+    }
+    .is-embed #root {
+      display: grid;
+      width: 100%;
+      height: 100vh;
+      grid-template-columns: minmax(0, 1fr) clamp(82px, 30vw, 120px);
+      gap: 0;
+      background: #000000;
+    }
+    .is-embed .orb-wrapper {
+      width: 100%;
+      height: auto;
+      max-height: 100vh;
+      aspect-ratio: 1;
+    }
+    .is-embed .controls {
+      align-self: stretch;
+      justify-content: center;
+      min-width: 0;
+      padding: clamp(5px, 1.5vmin, 12px);
+      border-left: 1px solid #ffffff;
+      background: #000000;
+    }
+    .is-embed .play-toggle {
+      padding-right: 6px;
+      padding-left: 6px;
+    }
+    .is-embed .control-label {
+      font-size: clamp(7px, 1.4vmin, 11px);
+    }
+    .has-external-controls body {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    .has-external-controls #root {
+      display: grid;
+      width: 100%;
+      height: 100vh;
+      grid-template-columns: 1fr;
+      place-items: center;
+    }
+    .has-external-controls .orb-wrapper {
+      width: min(100vw, 100vh);
+      height: min(100vw, 100vh);
+      max-width: 100%;
+      max-height: none;
+      aspect-ratio: 1;
+      align-self: center;
+      justify-self: center;
+    }
+    html.theme-light body,
+    html.theme-light #root,
+    html.theme-light.is-embed body,
+    html.theme-light.is-embed #root {
+      background: #f4f4f6;
+    }
+  </style>
+  <script>
+    const flowOrbParams = new URLSearchParams(window.location.search);
+    if (flowOrbParams.has('embed')) {
+      document.documentElement.classList.add('is-embed');
+    }
+    if (['external', 'hidden'].includes(flowOrbParams.get('controls'))) {
+      document.documentElement.classList.add('has-external-controls');
+    }
+    if (flowOrbParams.get('theme') === 'light') {
+      document.documentElement.classList.add('theme-light');
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+    const ThinkingOrb = ({ size = 600, isPlaying = false, intensity = 1.0 }) => {
+      const containerRef = useRef(null);
+      const sceneRef = useRef(null);
+      const cameraRef = useRef(null);
+      const rendererRef = useRef(null);
+      const sphereRef = useRef(null);
+      const uniformsRef = useRef(null);
+      const animFrameRef = useRef(null);
+      const clockRef = useRef(null);
+      const smoothMotionRef = useRef(0);
+      const playingRef = useRef(isPlaying);
+      const intensityRef = useRef(intensity);
+
+      playingRef.current = isPlaying;
+      intensityRef.current = intensity;
+
+      useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const vertexShader = `
+          varying vec3 vNormal;
+          varying vec3 vPosition;
+          varying vec3 vWorldPos;
+          varying vec2 vUv;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPos = worldPos.xyz;
+            vPosition = position;
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `;
+
+        const fragmentShader = `
+          varying vec3 vNormal;
+          varying vec3 vWorldPos;
+          varying vec3 vPosition;
+          varying vec2 vUv;
+          uniform float uTime;
+          uniform float uMotion;
+          uniform vec3 uViewPos;
+
+          vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+          vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+          vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+          vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+          float snoise(vec3 v) {
+            const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+            const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+            vec3 i  = floor(v + dot(v, C.yyy));
+            vec3 x0 = v - i + dot(i, C.xxx);
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min(g.xyz, l.zxy);
+            vec3 i2 = max(g.xyz, l.zxy);
+            vec3 x1 = x0 - i1 + C.xxx;
+            vec3 x2 = x0 - i2 + C.yyy;
+            vec3 x3 = x0 - D.yyy;
+            i = mod289(i);
+            vec4 p = permute(permute(permute(
+                      i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+            float n_ = 0.142857142857;
+            vec3 ns = n_ * D.wyz - D.xzx;
+            vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_);
+            vec4 x = x_ * ns.x + ns.yyyy;
+            vec4 y = y_ * ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(x) - abs(y);
+            vec4 b0 = vec4(x.xy, y.xy);
+            vec4 b1 = vec4(x.zw, y.zw);
+            vec4 s0 = floor(b0)*2.0 + 1.0;
+            vec4 s1 = floor(b1)*2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+            vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+            vec3 p0 = vec3(a0.xy, h.x);
+            vec3 p1 = vec3(a0.zw, h.y);
+            vec3 p2 = vec3(a1.xy, h.z);
+            vec3 p3 = vec3(a1.zw, h.w);
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+            p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+            vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+          }
+
+          mat3 rotX(float a) {
+            float s = sin(a), c = cos(a);
+            return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+          }
+          mat3 rotY(float a) {
+            float s = sin(a), c = cos(a);
+            return mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+          }
+          mat3 rotZ(float a) {
+            float s = sin(a), c = cos(a);
+            return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+          }
+
+          void main() {
+            vec3 normal = normalize(vNormal);
+            vec3 viewDir = normalize(uViewPos - vWorldPos);
+
+            vec3 c1 = vec3(0.06, 0.08, 0.12); // 黑色
+            vec3 c2 = vec3(0.20, 0.45, 0.98); // 蓝色
+            vec3 c3 = vec3(0.18, 0.86, 0.94); // 青色
+
+            float motion = clamp(uMotion, 0.0, 2.0);
+            float visualMotion = min(motion, 1.0);
+            // 噪波尺寸与形态保持恒定，播放时只旋转采样空间
+            // 1.0 / 1.5 线性提速；接近 2.0 时额外进入高速旋转档
+            float highGear = smoothstep(1.65, 1.95, motion);
+            float rotationSpeed = 0.16 + motion * 0.32 + highGear * 0.68;
+            float warpBoost = 0.12;
+
+            vec3 basePos = vPosition * 0.55;
+            vec3 flowPos = basePos;
+            flowPos = rotY(uTime * rotationSpeed) * flowPos;
+            flowPos = rotX(uTime * rotationSpeed * 0.46) * flowPos;
+            flowPos = rotZ(uTime * rotationSpeed * 0.20) * flowPos;
+
+            // 使用固定噪波场，不做时间平移，避免噪波越动越碎或尺寸变化
+            vec3 warp = vec3(
+              snoise(flowPos * 1.8 + vec3(0.0, 0.0, 1.4)),
+              snoise(flowPos * 1.8 + vec3(2.7, 0.0, 0.6)),
+              snoise(flowPos * 1.8 + vec3(0.4, 1.9, 0.0))
+            ) * warpBoost;
+
+            vec3 nc = flowPos + warp;
+            float n1 = snoise(nc * 0.90);
+            float n2 = snoise(nc * 1.08 + vec3(1.2, 0.0, 2.4));
+            float n3 = snoise(nc * 0.96 + vec3(2.8, 0.6, 0.0));
+
+            float t1 = n1 * 0.5 + 0.5;
+            float t2 = n2 * 0.5 + 0.5;
+            float t3 = n3 * 0.5 + 0.5;
+
+            vec3 colorAB = mix(c1, c2, t1);
+            vec3 colorBC = mix(c2, c3, t2);
+            vec3 coreColor = mix(colorAB, colorBC, t3);
+
+            float dist = length(vPosition.xy);
+            float glow = exp(-dist * (2.15 - visualMotion * 0.2));
+            coreColor += glow * vec3(0.20, 0.19, 0.24) * (1.0 + visualMotion * 0.45);
+            coreColor *= 1.0 + visualMotion * 0.35;
+
+            float fresnel = pow(1.0 - abs(dot(normal, viewDir)), 3.4);
+            vec3 fresnelCol = vec3(1.0, 0.97, 0.93) * fresnel * 0.035;
+
+            vec3 lightDir = normalize(vec3(-0.75, 0.92, 2.35));
+            vec3 halfVec = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(halfVec, normal), 0.0), 145.0);
+            float hotspotMask = smoothstep(0.58, 0.94, dot(normal, normalize(vec3(-0.22, 0.28, 0.93))));
+            vec3 specular = vec3(1.0, 0.985, 0.96) * spec * hotspotMask * (0.13 + visualMotion * 0.02);
+
+            vec3 finalColor = coreColor + fresnelCol + specular;
+            finalColor = clamp(finalColor, 0.0, 1.0);
+
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `;
+
+        const scene = new THREE.Scene();
+        sceneRef.current = scene;
+
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera.position.set(0, 0, 3.6);
+        camera.lookAt(0, 0, 0);
+        cameraRef.current = camera;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: true });
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(size, size);
+        container.appendChild(renderer.domElement);
+        rendererRef.current = renderer;
+
+        const geometry = new THREE.SphereGeometry(1, 128, 128);
+        const uniforms = {
+          uTime: { value: 0 },
+          uMotion: { value: 0 },
+          uViewPos: { value: new THREE.Vector3() },
+        };
+        uniformsRef.current = uniforms;
+
+        const material = new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader,
+          fragmentShader,
+          transparent: true,
+          depthWrite: false,
+        });
+
+        const sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
+        sphereRef.current = sphere;
+
+        clockRef.current = new THREE.Clock();
+        const animate = () => {
+          animFrameRef.current = requestAnimationFrame(animate);
+          if (!uniformsRef.current) return;
+
+          const delta = Math.min(clockRef.current.getDelta(), 0.05);
+          const u = uniformsRef.current;
+
+          const targetMotion = playingRef.current ? intensityRef.current : 0.0;
+          smoothMotionRef.current += (targetMotion - smoothMotionRef.current) * (1.0 - Math.exp(-delta * 8.0));
+          const motion = smoothMotionRef.current;
+          u.uMotion.value = motion;
+
+          if (playingRef.current) {
+            u.uTime.value += delta;
+          }
+
+          const baseScale = 1.0 + motion * 0.13;
+          const pulse = playingRef.current ? Math.sin(u.uTime.value * 2.8) * 0.03 * motion : 0.0;
+          sphere.scale.setScalar(baseScale + pulse);
+
+          // 球体本体保持慢速；2.0 档增加一小段额外速度
+          const highGear = Math.max(0, Math.min(1, (motion - 1.65) / 0.35));
+          sphere.rotation.y += delta * (0.015 + motion * 0.12 + highGear * 0.20);
+          sphere.rotation.x += delta * (0.006 + motion * 0.040 + highGear * 0.065);
+          sphere.rotation.z += delta * (0.003 + motion * 0.012 + highGear * 0.022);
+
+          u.uViewPos.value.copy(camera.position);
+          renderer.render(scene, camera);
+        };
+        animate();
+
+        const observer = new ResizeObserver(entries => {
+          for (let entry of entries) {
+            const w = entry.contentRect.width;
+            const h = entry.contentRect.height;
+            const s = Math.min(w, h);
+            renderer.setSize(s, s);
+            camera.aspect = 1;
+            camera.updateProjectionMatrix();
+          }
+        });
+        observer.observe(container);
+
+        return () => {
+          cancelAnimationFrame(animFrameRef.current);
+          observer.disconnect();
+          if (container.contains(renderer.domElement)) {
+            container.removeChild(renderer.domElement);
+          }
+          renderer.dispose();
+          geometry.dispose();
+          material.dispose();
+        };
+      }, [size]);
+
+      return (
+        <div
+          ref={containerRef}
+          style={{
+            width: size,
+            height: size,
+            overflow: 'hidden',
+            borderRadius: '50%',
+            background: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+          }}
+        />
+      );
+    };
+
+    const App = () => {
+      const [playing, setPlaying] = useState(true);
+      const [intensity, setIntensity] = useState(1.0);
+      const togglePlaying = useCallback(() => setPlaying(prev => !prev), []);
+      const controlMode = flowOrbParams.get('controls');
+      const usesExternalControls = controlMode === 'external';
+      const showsInternalControls = !['external', 'hidden'].includes(controlMode);
+
+      useEffect(() => {
+        if (!usesExternalControls) return undefined;
+
+        const handleControlMessage = (event) => {
+          if (event.source !== window.parent || event.data?.type !== 'floworb-control') return;
+          if (typeof event.data.playing === 'boolean') {
+            setPlaying(event.data.playing);
+          }
+          if ([1.0, 1.5, 2.0].includes(event.data.intensity)) {
+            setIntensity(event.data.intensity);
+          }
+        };
+
+        window.addEventListener('message', handleControlMessage);
+        return () => window.removeEventListener('message', handleControlMessage);
+      }, [usesExternalControls]);
+
+      return (
+        <>
+          <div className="orb-wrapper">
+            <ThinkingOrb size={600} isPlaying={playing} intensity={intensity} />
+          </div>
+          {showsInternalControls && <div className="controls">
+            <button
+              onClick={togglePlaying}
+              className="play-toggle"
+              aria-label={playing ? 'Pause FlowOrb' : 'Play FlowOrb'}
+            >
+              <span className={`control-icon ${playing ? 'pause' : 'play'}`} aria-hidden="true"></span>
+              <span className="control-label">{playing ? 'PAUSE' : 'PLAY'}</span>
+            </button>
+            <div className="intensity-group">
+              <span className="intensity-label">MOTION INTENSITY</span>
+              <div className="intensity-presets">
+                <button
+                  className={`intensity-btn ${intensity === 1.0 ? 'active' : ''}`}
+                  onClick={() => setIntensity(1.0)}
+                >
+                  1.0X
+                </button>
+                <button
+                  className={`intensity-btn ${intensity === 1.5 ? 'active' : ''}`}
+                  onClick={() => setIntensity(1.5)}
+                >
+                  1.5X
+                </button>
+                <button
+                  className={`intensity-btn ${intensity === 2.0 ? 'active' : ''}`}
+                  onClick={() => setIntensity(2.0)}
+                >
+                  2.0X
+                </button>
+              </div>
+            </div>
+          </div>}
+        </>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
