@@ -8,6 +8,7 @@
 
   const buttons = [...filters.querySelectorAll("[data-fluid-theme]")];
   const cards = [...grid.querySelectorAll("[data-fluid-theme-card]")];
+  let filterTimer = 0;
 
   const applyFilter = (theme) => {
     buttons.forEach((button) => {
@@ -16,12 +17,14 @@
       button.setAttribute("aria-pressed", String(isActive));
     });
 
+    window.clearTimeout(filterTimer);
     grid.classList.add("is-filtering");
-    window.setTimeout(() => {
+    filterTimer = window.setTimeout(() => {
       cards.forEach((card) => {
         card.hidden =
           theme !== "all" && card.dataset.fluidThemeCard !== theme;
       });
+      grid.classList.toggle("is-single", theme !== "all");
       requestAnimationFrame(() => grid.classList.remove("is-filtering"));
     }, 160);
   };

@@ -7,6 +7,7 @@
     const filters = document.querySelector("[data-spectra-filters]");
     const grid = document.querySelector("[data-spectra-grid]");
     if (!filters || !grid) return;
+    let filterTimer = 0;
 
     const options = [{ slug: "all", title: "ALL" }, ...spectraProjects];
     filters.innerHTML = options.map((project, index) => `<button class="filter-button${index === 0 ? " is-active" : ""}" type="button" data-filter="${project.slug}" aria-pressed="${index === 0}"><span aria-hidden="true"></span>${ui.escapeHtml(project.title)}</button>`).join("");
@@ -24,6 +25,7 @@
           <strong>PAID</strong>
         </div>
         <a class="circle-arrow spectra-study__link" href="${ui.projectUrl(project, "spectra")}" aria-label="View ${ui.escapeHtml(project.title)} details">→</a>
+        <a class="text-link spectra-study__view" href="${ui.projectUrl(project, "spectra")}">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
       `;
       const previewUrl = new URL(project.embedUrl, window.location.href);
       previewUrl.searchParams.set("collection", "grid");
@@ -48,11 +50,17 @@
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", String(active));
       });
+      window.clearTimeout(filterTimer);
+      grid.classList.remove("has-hover");
+      grid.querySelectorAll(".is-hovered").forEach((card) => {
+        card.classList.remove("is-hovered");
+      });
       grid.classList.add("is-filtering");
-      window.setTimeout(() => {
+      filterTimer = window.setTimeout(() => {
         grid.querySelectorAll(".spectra-study").forEach((card) => {
           card.hidden = filter !== "all" && card.dataset.slug !== filter;
         });
+        grid.classList.toggle("is-single", filter !== "all");
         requestAnimationFrame(() => grid.classList.remove("is-filtering"));
       }, 160);
     }

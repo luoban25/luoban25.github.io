@@ -607,6 +607,36 @@ body[data-page="spectra"] .catalog-title {
   opacity: .72;
 }
 
+.spectra-study__view {
+  display: none;
+}
+
+.spectra-grid.is-single {
+  min-height: min(620px, calc(100svh - var(--header-height) - 96px));
+  padding-top: 0;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  justify-items: center;
+}
+
+.spectra-grid.is-single .spectra-study {
+  width: min(100%, 620px);
+  gap: 10px;
+}
+
+.spectra-grid.is-single .spectra-study__link {
+  display: none;
+}
+
+.spectra-grid.is-single .spectra-study__view {
+  display: inline-flex;
+  margin-top: 4px;
+  justify-self: center;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 600;
+}
+
 @media (min-width: 1024px) {
   body[data-page="spectra"] .catalog-layout {
     margin-block: 0 auto;
@@ -624,6 +654,10 @@ body[data-page="spectra"] .catalog-title {
   body[data-page="spectra"] .spectra-grid {
     padding-top: clamp(88px, 8vw, 116px);
     row-gap: clamp(34px, 2.6vw, 44px);
+  }
+
+  body[data-page="spectra"] .spectra-grid.is-single {
+    padding-top: 0;
   }
 }
 

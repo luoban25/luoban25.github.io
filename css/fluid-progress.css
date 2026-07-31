@@ -50,6 +50,30 @@
   min-width: 0;
 }
 
+.fluid-progress-card__view {
+  display: none;
+}
+
+.fluid-progress-grid.is-single {
+  min-height: min(620px, calc(100svh - var(--header-height) - 96px));
+  padding-top: 0;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  justify-items: center;
+}
+
+.fluid-progress-grid.is-single .fluid-progress-card {
+  width: min(100%, 650px);
+}
+
+.fluid-progress-grid.is-single .fluid-progress-card__view {
+  display: inline-flex;
+  margin: 8px auto 0;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .fluid-progress-card header {
   display: flex;
   min-height: 24px;
