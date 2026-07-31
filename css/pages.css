@@ -568,7 +568,7 @@ body[data-page="spectra"] .catalog-title {
   margin: 0;
   overflow: hidden;
   color: var(--ink);
-  font-size: clamp(7px, .68vw, 12px);
+  font-size: clamp(12px, .72vw, 14px);
   font-weight: 700;
   letter-spacing: normal;
   line-height: 1.2;
@@ -612,6 +612,11 @@ body[data-page="spectra"] .catalog-title {
     margin-block: 0 auto;
   }
 
+  body[data-page="spectra"] .filter-button {
+    font-size: clamp(10px, .62vw, 12px);
+    font-weight: 600;
+  }
+
   body[data-page="spectra"] .catalog-sidebar .filter-list {
     gap: clamp(10px, .75vw, 13px);
   }
@@ -620,6 +625,10 @@ body[data-page="spectra"] .catalog-title {
     padding-top: clamp(88px, 8vw, 116px);
     row-gap: clamp(34px, 2.6vw, 44px);
   }
+}
+
+:root[data-theme="dark"] body[data-page="spectra"] .spectra-study__frame iframe {
+  clip-path: inset(6px round 999px);
 }
 
 
@@ -738,7 +747,7 @@ body[data-page="spectra"] .catalog-title {
 }
 
 .project-adjacent strong {
-  font-family: "Musicnet", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(18px, 2vw, 28px);
   font-weight: 400;
 }
@@ -801,7 +810,7 @@ body[data-page="spectra"] .catalog-title {
 
 .info-list h2 {
   margin: 0;
-  font-family: "Musicnet", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(23px, 3vw, 44px);
   font-weight: 400;
 }
