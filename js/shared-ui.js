@@ -16,13 +16,13 @@
     if (explicit) return explicit;
     if (document.body.dataset.page !== "project") return "";
     const from = new URLSearchParams(window.location.search).get("from");
-    return ["works", "spectra", "about", "exhibitions", "contact"].includes(from) ? from : "works";
+    if (from === "spectra") return "works";
+    return ["works", "about", "exhibitions", "contact"].includes(from) ? from : "works";
   }
 
   function headerTemplate(active) {
     const navItems = [
       ["works", "WORKS", "./index.html"],
-      ["spectra", "SPECTRA", "./spectra.html"],
       ["about", "ABOUT", "./about.html"],
       ["exhibitions", "EXHIBITIONS", "./exhibitions.html"],
       ["contact", "CONTACT", "./contact.html"],

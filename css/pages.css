@@ -873,3 +873,273 @@ body[data-page="spectra"] .catalog-title {
   font-size: clamp(13px, 1.4vw, 20px);
   font-weight: 500;
 }
+
+/* HOME STICKY CHAPTER TRANSITIONS */
+@media (min-width: 1280px) {
+  body[data-page="works"] .home-flow {
+    position: relative;
+    isolation: isolate;
+  }
+
+  body[data-page="works"] .home-panel {
+    position: sticky;
+    z-index: var(--z-content);
+    top: 0;
+    min-height: 100svh;
+    overflow: clip;
+    overflow-clip-margin: 12px;
+    background: var(--page-bg);
+  }
+
+  body[data-page="works"] .home-panel--works {
+    min-height: 100svh;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    body[data-page="works"]::before {
+      position: fixed;
+      z-index: var(--z-modal);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      content: "";
+      pointer-events: none;
+      background: var(--ink);
+      transform: scaleX(0);
+      transform-origin: left center;
+      animation: home-scroll-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    body[data-page="works"] .home-panel--works .works-layout {
+      animation: home-first-panel-exit linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 92svh;
+    }
+
+    body[data-page="works"] .home-panel--skills .catalog-layout {
+      animation: home-second-panel-enter linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 18svh 92svh;
+    }
+  }
+}
+
+@keyframes home-scroll-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes home-first-panel-exit {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    opacity: .16;
+    transform: translate3d(0, -5svh, 0) scale(.975);
+  }
+}
+
+@keyframes home-second-panel-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 7svh, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (min-width: 1280px) and (prefers-reduced-motion: reduce) {
+  body[data-page="works"]::before {
+    display: none;
+  }
+
+  body[data-page="works"] .home-panel {
+    position: relative;
+    top: auto;
+  }
+
+  body[data-page="works"] .home-panel--works .works-layout,
+  body[data-page="works"] .home-panel--skills .catalog-layout {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* HOME CHAPTERS 03–05: PARALLAX + PROXIMITY SNAP */
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  html:has(body[data-page="works"]) {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 0;
+    overflow-x: clip;
+  }
+
+  body[data-page="works"] {
+    overflow-x: clip;
+  }
+
+  body[data-page="works"] .home-panel {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  body[data-page="works"] #spectra,
+  body[data-page="works"] #fluid-progress,
+  body[data-page="works"] #fluid-response {
+    overflow: visible;
+  }
+
+  @supports (animation-timeline: view()) {
+    body[data-page="works"] .home-flow {
+      timeline-scope: --chapter-spectra, --chapter-progress, --chapter-response;
+    }
+
+    body[data-page="works"] #spectra {
+      view-timeline: --chapter-spectra block;
+    }
+
+    body[data-page="works"] #fluid-progress {
+      view-timeline: --chapter-progress block;
+    }
+
+    body[data-page="works"] #fluid-response {
+      view-timeline: --chapter-response block;
+    }
+
+    body[data-page="works"] #spectra .catalog-sidebar {
+      animation: chapter-spectra-sidebar linear both;
+      animation-timeline: --chapter-spectra;
+      animation-range: entry 0% exit 100%;
+    }
+
+    body[data-page="works"] #spectra .spectra-grid {
+      animation: chapter-spectra-grid linear both;
+      animation-timeline: --chapter-spectra;
+      animation-range: entry 0% exit 100%;
+    }
+
+    body[data-page="works"] #fluid-progress .catalog-sidebar {
+      animation: chapter-progress-sidebar linear both;
+      animation-timeline: --chapter-progress;
+      animation-range: entry 0% cover 20%;
+    }
+
+    body[data-page="works"] #fluid-progress .fluid-progress-grid {
+      animation: chapter-progress-grid linear both;
+      animation-timeline: --chapter-progress;
+      animation-range: entry 2% cover 22%;
+    }
+
+    body[data-page="works"] #fluid-response .catalog-sidebar {
+      animation: chapter-response-sidebar linear both;
+      animation-timeline: --chapter-response;
+      animation-range: entry 0% cover 20%;
+    }
+
+    body[data-page="works"] #fluid-response .fluid-interactive-grid {
+      animation: chapter-response-grid linear both;
+      animation-timeline: --chapter-response;
+      animation-range: entry 2% cover 24%;
+    }
+  }
+}
+
+@keyframes chapter-spectra-sidebar {
+  0% {
+    opacity: .08;
+    transform: translate3d(-32vw, 10vh, 0);
+  }
+
+  22% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate3d(1vw, -1.5vh, 0);
+  }
+
+  100% {
+    opacity: .58;
+    transform: translate3d(2vw, -4vh, 0);
+  }
+}
+
+@keyframes chapter-spectra-grid {
+  0% {
+    opacity: .12;
+    transform: translate3d(42vw, -6vh, 0);
+  }
+
+  22% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate3d(-1.5vw, 1.5vh, 0);
+  }
+
+  100% {
+    opacity: .62;
+    transform: translate3d(-3vw, 4vh, 0);
+  }
+}
+
+@keyframes chapter-progress-sidebar {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 65vh, 0) scale(.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes chapter-progress-grid {
+  from {
+    opacity: .08;
+    transform: translate3d(0, 86vh, 0) scale(.86);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes chapter-response-sidebar {
+  from {
+    opacity: 0;
+    transform: translate3d(-34vw, 58vh, 0) rotate(-3.5deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0);
+  }
+}
+
+@keyframes chapter-response-grid {
+  from {
+    opacity: .06;
+    transform: translate3d(44vw, 72vh, 0) rotate(3deg) scale(.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}

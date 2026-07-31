@@ -30,7 +30,7 @@
     const backTargets = {
       works: ["./index.html", "BACK TO WORKS"],
       skills: ["./skills.html", "BACK TO SKILLS"],
-      spectra: ["./spectra.html", "BACK TO SPECTRA"],
+      spectra: ["./index.html#spectra", "BACK TO SPECTRA"],
     };
 
     document.title = `${project.title} — AI Creative Lab`;

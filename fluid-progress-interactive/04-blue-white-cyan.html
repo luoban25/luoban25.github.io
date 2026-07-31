@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fluid Progress Card V7 Blue White Cyan</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #fff;
+    }
+
+    .app {
+      width: min(860px, calc(100vw - 36px));
+      display: grid;
+      align-items: start;
+      background: transparent;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3.7 / 1;
+      min-height: 184px;
+      max-height: 238px;
+      overflow: hidden;
+      isolation: isolate;
+      border-radius: clamp(38px, 4.8vw, 60px);
+      background: #161c23;
+      box-shadow:
+        0 22px 58px rgba(18, 24, 30, .14),
+        inset 0 1px 0 rgba(255,255,255,.05),
+        inset 0 -1px 0 rgba(0,0,0,.42);
+      cursor: ew-resize;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    .render-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #fallbackCanvas {
+      display: none;
+    }
+
+    .card.use-fallback #glCanvas {
+      display: none;
+    }
+
+    .card.use-fallback #fallbackCanvas {
+      display: block;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.038), transparent 28%, transparent 72%, rgba(0,0,0,.14)),
+        radial-gradient(circle at 84% 18%, rgba(255,255,255,.024), transparent 35%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.042);
+    }
+
+    .content {
+      position: relative;
+      z-index: 3;
+      height: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      padding: 0 clamp(32px, 4.8vw, 62px);
+      pointer-events: none;
+    }
+
+    .title {
+      margin: 0;
+      color: rgba(255,255,255,.985);
+      font-size: clamp(22px, 2.6vw, 38px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .subtitle {
+      margin: 11px 0 0;
+      color: rgba(204, 232, 240, .44);
+      font-size: clamp(12px, 1.08vw, 16px);
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: .055em;
+      white-space: nowrap;
+    }
+
+    .percent {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      min-width: 172px;
+      margin-left: clamp(24px, 3.6vw, 52px);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 24px rgba(255,255,255,.02);
+      white-space: nowrap;
+    }
+
+    .percent-value {
+      font-size: clamp(52px, 6.6vw, 88px);
+      line-height: .84;
+      font-weight: 300;
+      letter-spacing: 0;
+    }
+
+    .percent-sign {
+      margin-left: .12em;
+      font-size: clamp(28px, 3.9vw, 50px);
+      line-height: 1;
+      font-weight: 300;
+      transform: translateY(-.02em);
+    }
+
+    .status {
+      position: fixed;
+      left: 14px;
+      bottom: 14px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(20,24,28,.72);
+      color: rgba(255,255,255,.7);
+      font: 11px/1 Arial, sans-serif;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .status.show { opacity: 1; }
+
+    @media (max-width: 720px) {
+      body { overflow: auto; }
+
+      .app {
+        width: min(95vw, 620px);
+      }
+
+      .card {
+        aspect-ratio: 3.0 / 1;
+        min-height: 164px;
+      }
+
+      .content {
+        padding-inline: 24px;
+      }
+
+      .title {
+        font-size: clamp(18px, 4.6vw, 28px);
+      }
+
+      .subtitle {
+        margin-top: 8px;
+        font-size: clamp(9px, 2.2vw, 13px);
+      }
+
+      .percent {
+        min-width: 110px;
+        margin-left: 16px;
+      }
+
+      .percent-value {
+        font-size: clamp(40px, 12vw, 64px);
+      }
+
+      .percent-sign {
+        font-size: clamp(22px, 6vw, 34px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="card" id="card" aria-label="可拖动液态进度卡片">
+      <canvas class="render-layer" id="glCanvas" aria-hidden="true"></canvas>
+      <canvas class="render-layer" id="fallbackCanvas" aria-hidden="true"></canvas>
+
+      <div class="content">
+        <div class="copy">
+          <h1 class="title">NEURAL SYNC</h1>
+          <p class="subtitle">ADAPTIVE INFERENCE STREAM</p>
+        </div>
+
+        <div class="percent" aria-live="polite">
+          <span class="percent-value" id="percentValue">64</span>
+          <span class="percent-sign">%</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const card = document.getElementById("card");
+      const glCanvas = document.getElementById("glCanvas");
+      const fallbackCanvas = document.getElementById("fallbackCanvas");
+      const percentValue = document.getElementById("percentValue");
+      const status = document.getElementById("status");
+
+      const state = {
+        current: 0.64,
+        target: 0.64,
+        velocity: 0,
+        draggingCard: false,
+        pointerId: null,
+        impulse: 0
+      };
+
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+
+      function showStatus(message) {
+        status.textContent = message;
+        status.classList.add("show");
+        window.setTimeout(() => status.classList.remove("show"), 2200);
+      }
+
+      function updateProgress(dt) {
+        const stiffness = 26.0;
+        const damping = 9.5;
+
+        const force = (state.target - state.current) * stiffness;
+        state.velocity += force * dt;
+        state.velocity *= Math.exp(-damping * dt);
+
+        state.current += state.velocity * dt;
+        state.current = clamp(state.current, 0, 1);
+
+        const delta = state.target - state.current;
+        state.impulse += (Math.abs(delta) * 2.2 - state.impulse) * Math.min(1, dt * 5.2);
+
+        percentValue.textContent = String(Math.round(state.current * 100));
+      }
+
+      function updateFromCardPointer(clientX) {
+        const rect = card.getBoundingClientRect();
+        const x = clamp((clientX - rect.left) / rect.width, 0, 1);
+        state.target = x;
+      }
+
+      card.addEventListener("pointerdown", (e) => {
+        state.draggingCard = true;
+        state.pointerId = e.pointerId;
+        try { card.setPointerCapture(e.pointerId); } catch (_) {}
+        updateFromCardPointer(e.clientX);
+      });
+
+      card.addEventListener("pointermove", (e) => {
+        if (!state.draggingCard || e.pointerId !== state.pointerId) return;
+        updateFromCardPointer(e.clientX);
+      });
+
+      function endCardDrag(e) {
+        if (state.pointerId !== null && e.pointerId !== state.pointerId) return;
+        state.draggingCard = false;
+        state.pointerId = null;
+      }
+
+      card.addEventListener("pointerup", endCardDrag);
+      card.addEventListener("pointercancel", endCardDrag);
+
+      function startWebGL() {
+        const gl =
+          glCanvas.getContext("webgl", {
+            alpha: false,
+            antialias: false,
+            depth: false,
+            stencil: false,
+            premultipliedAlpha: false,
+            preserveDrawingBuffer: false,
+            powerPreference: "high-performance"
+          }) ||
+          glCanvas.getContext("experimental-webgl");
+
+        if (!gl) throw new Error("WebGL unavailable");
+
+        const vertexSource = `
+          attribute vec2 a_position;
+          varying vec2 v_uv;
+
+          void main() {
+            v_uv = a_position * 0.5 + 0.5;
+            gl_Position = vec4(a_position, 0.0, 1.0);
+          }
+        `;
+
+        const fragmentSource = `
+          precision mediump float;
+
+          varying vec2 v_uv;
+
+          uniform vec2 u_resolution;
+          uniform float u_time;
+          uniform float u_progress;
+          uniform float u_seed;
+          uniform float u_velocity;
+          uniform float u_impulse;
+
+          float hash21(vec2 p) {
+            p = fract(p * vec2(123.34, 456.21));
+            p += dot(p, p + vec2(45.32 + u_seed));
+            return fract(p.x * p.y);
+          }
+
+          float noise2(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+
+            float a = hash21(i);
+            float b = hash21(i + vec2(1.0, 0.0));
+            float c = hash21(i + vec2(0.0, 1.0));
+            float d = hash21(i + vec2(1.0, 1.0));
+
+            return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+          }
+
+          float fbm(vec2 p) {
+            float v = 0.0;
+            float a = 0.5;
+
+            for (int i = 0; i < 4; i++) {
+              v += a * noise2(p);
+              p = mat2(0.80, 0.60, -0.60, 0.80) * p * 2.01 + vec2(7.1, 13.7);
+              a *= 0.5;
+            }
+
+            return v;
+          }
+
+          float saturate(float x) {
+            return clamp(x, 0.0, 1.0);
+          }
+
+          void main() {
+            vec2 uv = v_uv;
+            float aspect = u_resolution.x / max(u_resolution.y, 1.0);
+            vec2 p = vec2((uv.x - 0.5) * aspect, uv.y - 0.5);
+
+            float t = u_time;
+            float y = uv.y;
+
+            float vel = clamp(u_velocity * 12.0, -1.0, 1.0);
+            float impulse = clamp(u_impulse, 0.0, 1.0);
+
+            float pushBias = vel * 0.010;
+            float leadBulge = exp(-pow((y - 0.50 - vel * 0.08) / 0.19, 2.0)) * vel * 0.030;
+            float dragTail = exp(-pow((y - 0.50 + vel * 0.12) / 0.30, 2.0)) * (-vel) * 0.018;
+
+            float n = fbm(vec2(y * 4.2 + u_seed, t * 0.16));
+            float wave =
+                sin(y * 8.2 + t * 0.72 + u_seed) * 0.010
+              + sin(y * 16.4 - t * 0.56 + u_seed * 1.9) * 0.006
+              + sin(y * 33.0 + t * 1.06 + vel * 2.0) * 0.0028;
+
+            float bulgeTop =
+              exp(-pow((y - 0.69) / 0.088, 2.0)) * sin(t * 0.72 + 1.15) * 0.015;
+
+            float bulgeBottom =
+              exp(-pow((y - 0.33) / 0.078, 2.0)) * sin(t * 0.64 + 4.3) * 0.013;
+
+            float edge =
+              u_progress
+              + pushBias
+              + leadBulge
+              + dragTail
+              + wave
+              + (n - 0.5) * 0.036
+              + bulgeTop
+              - bulgeBottom;
+
+            float d = uv.x - edge;
+            float fillMask = 1.0 - smoothstep(-0.004, 0.005, d);
+            float behind = max(edge - uv.x, 0.0);
+
+            vec2 flowP = p * vec2(1.42, 1.86);
+
+            vec2 warp = vec2(
+              fbm(flowP * 0.72 + vec2(t * 0.055, -t * 0.036) + vec2(u_seed)),
+              fbm(flowP * 0.83 + vec2(-t * 0.042, t * 0.047) + vec2(6.2 + u_seed))
+            );
+
+            vec2 warped = flowP + (warp - 0.5) * (1.10 + impulse * 0.22);
+
+            float smokeA = fbm(warped * 1.16 + vec2(-t * 0.070, t * 0.022));
+            float smokeB = fbm(warped * 2.16 + vec2(t * 0.088, -t * 0.054));
+            float smoke = smoothstep(0.24, 0.84, smokeA * 0.74 + smokeB * 0.36);
+
+            float nearTrail = exp(-behind * (11.8 - impulse * 2.2));
+            float wideTrail = exp(-behind * (4.5 - impulse * 0.9));
+
+            float verticalFade =
+              smoothstep(0.0, 0.12, uv.y) *
+              smoothstep(0.0, 0.12, 1.0 - uv.y);
+
+            float trail =
+              fillMask *
+              verticalFade *
+              (smoke * nearTrail + smokeA * wideTrail * 0.44);
+
+            vec3 darkRight = vec3(0.095, 0.110, 0.130);
+            vec3 darkLeft = vec3(0.070, 0.118, 0.140);
+            vec3 color = mix(darkRight, darkLeft, fillMask * 0.76);
+
+            vec3 deepBlue = vec3(0.080, 0.220, 0.420);
+            vec3 cyan = vec3(0.090, 0.720, 0.920);
+            vec3 brightCyan = vec3(0.400, 0.950, 1.000);
+            vec3 whiteBlue = vec3(0.900, 0.980, 1.000);
+            vec3 softWhite = vec3(1.000, 1.000, 1.000);
+
+            float chroma = saturate(smoke * 1.16 + nearTrail * 0.35);
+            vec3 fluid = mix(deepBlue, cyan, smoothstep(0.16, 0.74, chroma));
+            fluid = mix(
+              fluid,
+              brightCyan,
+              smoothstep(0.45, 0.95, nearTrail * (0.62 + smoke * 0.74))
+            );
+
+            color = mix(color, fluid, saturate(trail * 0.96));
+
+            float aura = exp(-behind * 17.6) * fillMask;
+            color += cyan * aura * (0.16 + smoke * 0.20);
+            color += brightCyan * aura * smoke * smoke * (0.16 + impulse * 0.08);
+
+            float core = exp(-abs(d) * 395.0);
+            float inner = exp(-abs(d) * 114.0);
+            float outer = exp(-abs(d) * 28.0);
+
+            color += cyan * outer * 0.14;
+            color += brightCyan * outer * (0.24 + impulse * 0.06);
+            color += whiteBlue * inner * (0.78 + impulse * 0.15);
+            color += softWhite * core * (1.08 + impulse * 0.12);
+
+            float rightMask = smoothstep(0.002, 0.040, d);
+            color = mix(color, darkRight + whiteBlue * outer * 0.038, rightMask * 0.92);
+
+            float vignette = 1.0 - smoothstep(
+              0.20,
+              0.88,
+              length((uv - 0.5) * vec2(0.60, 1.0))
+            );
+
+            color *= 0.90 + vignette * 0.10;
+            color = color / (1.0 + color * 0.14);
+            color = pow(max(color, vec3(0.0)), vec3(0.94));
+
+            gl_FragColor = vec4(color, 1.0);
+          }
+        `;
+
+        function compile(type, source) {
+          const shader = gl.createShader(type);
+          gl.shaderSource(shader, source);
+          gl.compileShader(shader);
+
+          if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            const log = gl.getShaderInfoLog(shader) || "Shader compile error";
+            gl.deleteShader(shader);
+            throw new Error(log);
+          }
+
+          return shader;
+        }
+
+        const vertexShader = compile(gl.VERTEX_SHADER, vertexSource);
+        const fragmentShader = compile(gl.FRAGMENT_SHADER, fragmentSource);
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          throw new Error(gl.getProgramInfoLog(program) || "Program link error");
+        }
+
+        gl.useProgram(program);
+
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([
+            -1, -1,
+             1, -1,
+            -1,  1,
+            -1,  1,
+             1, -1,
+             1,  1
+          ]),
+          gl.STATIC_DRAW
+        );
+
+        const position = gl.getAttribLocation(program, "a_position");
+        gl.enableVertexAttribArray(position);
+        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+        const uResolution = gl.getUniformLocation(program, "u_resolution");
+        const uTime = gl.getUniformLocation(program, "u_time");
+        const uProgress = gl.getUniformLocation(program, "u_progress");
+        const uSeed = gl.getUniformLocation(program, "u_seed");
+        const uVelocity = gl.getUniformLocation(program, "u_velocity");
+        const uImpulse = gl.getUniformLocation(program, "u_impulse");
+
+        let previous = performance.now();
+        const start = previous;
+
+        function resize() {
+          const rect = glCanvas.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+          const width = Math.max(1, Math.round(rect.width * dpr));
+          const height = Math.max(1, Math.round(rect.height * dpr));
+
+          if (glCanvas.width !== width || glCanvas.height !== height) {
+            glCanvas.width = width;
+            glCanvas.height = height;
+            gl.viewport(0, 0, width, height);
+          }
+        }
+
+        function render(now) {
+          const dt = Math.min((now - previous) / 1000, 0.033);
+          previous = now;
+
+          updateProgress(dt);
+          resize();
+
+          gl.uniform2f(uResolution, glCanvas.width, glCanvas.height);
+          gl.uniform1f(uTime, (now - start) / 1000);
+          gl.uniform1f(uProgress, state.current);
+          gl.uniform1f(uSeed, 4.08);
+          gl.uniform1f(uVelocity, state.velocity);
+          gl.uniform1f(uImpulse, state.impulse);
+
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+          requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+        showStatus("WebGL blue-white-cyan mode");
+      }
+
+      function startCanvasFallback() {
+        card.classList.add("use-fallback");
+
+        const ctx = fallbackCanvas.getContext("2d");
+        if (!ctx) return;
+
+        let previous = performance.now();
+        const start = previous;
+
+        function resize() {
+          const rect = fallbackCanvas.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+          const width = Math.max(1, Math.round(rect.width * dpr));
+          const height = Math.max(1, Math.round(rect.height * dpr));
+
+          if (fallbackCanvas.width !== width || fallbackCanvas.height !== height) {
+            fallbackCanvas.width = width;
+            fallbackCanvas.height = height;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
+
+          return { width: rect.width, height: rect.height };
+        }
+
+        function edgeX(y, width, height, t) {
+          const yn = y / height;
+          const vel = clamp(state.velocity * 12.0, -1, 1);
+
+          return width * state.current
+            + vel * width * 0.012
+            + Math.sin(yn * 8.0 + t * 1.10) * width * 0.009
+            + Math.sin(yn * 17.0 - t * 0.82) * width * 0.005
+            + Math.sin(yn * 31.0 + t * 1.38) * width * 0.0025
+            + Math.exp(-Math.pow((yn - 0.52 - vel * 0.08) / 0.22, 2)) * vel * width * 0.026;
+        }
+
+        function draw(now) {
+          const dt = Math.min((now - previous) / 1000, 0.033);
+          previous = now;
+          updateProgress(dt);
+
+          const size = resize();
+          const width = size.width;
+          const height = size.height;
+          const t = (now - start) / 1000;
+
+          ctx.clearRect(0, 0, width, height);
+          ctx.fillStyle = "#161c23";
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          for (let y = 0; y <= height; y += 3) {
+            ctx.lineTo(edgeX(y, width, height, t), y);
+          }
+          ctx.lineTo(0, height);
+          ctx.closePath();
+          ctx.clip();
+
+          const fill = ctx.createLinearGradient(0, 0, width * state.current, 0);
+          fill.addColorStop(0, "#123a69");
+          fill.addColorStop(.46, "#168ecf");
+          fill.addColorStop(.74, "#72e8ff");
+          fill.addColorStop(1, "#ffffff");
+          ctx.fillStyle = fill;
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.globalCompositeOperation = "screen";
+
+          for (let i = 0; i < 13; i++) {
+            const phase = i * 1.91;
+            const x =
+              width * (state.current - 0.14)
+              + Math.sin(t * 0.48 + phase) * width * 0.10;
+            const y =
+              height * (0.16 + ((i * 0.139) % 0.72))
+              + Math.sin(t * 0.68 + phase) * height * 0.09;
+            const rx = width * (0.055 + (i % 4) * 0.012);
+            const ry = height * (0.16 + (i % 3) * 0.032);
+
+            const glow = ctx.createRadialGradient(x, y, 0, x, y, rx);
+            glow.addColorStop(0, "rgba(155,248,255,.24)");
+            glow.addColorStop(.44, "rgba(70,194,255,.12)");
+            glow.addColorStop(1, "rgba(18,58,88,0)");
+
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+
+          ctx.save();
+          ctx.globalCompositeOperation = "screen";
+          ctx.lineCap = "round";
+
+          for (let layer = 0; layer < 3; layer++) {
+            ctx.beginPath();
+            for (let y = 0; y <= height; y += 2) {
+              const x = edgeX(y, width, height, t);
+              if (y === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+
+            if (layer === 0) {
+              ctx.strokeStyle = "rgba(90,208,255,.24)";
+              ctx.lineWidth = 20;
+              ctx.shadowBlur = 28;
+              ctx.shadowColor = "rgba(50,165,255,.60)";
+            } else if (layer === 1) {
+              ctx.strokeStyle = "rgba(220,250,255,.88)";
+              ctx.lineWidth = 6;
+              ctx.shadowBlur = 14;
+              ctx.shadowColor = "rgba(110,232,255,.86)";
+            } else {
+              ctx.strokeStyle = "rgba(255,255,255,.98)";
+              ctx.lineWidth = 2;
+              ctx.shadowBlur = 8;
+              ctx.shadowColor = "rgba(200,248,255,.95)";
+            }
+
+            ctx.stroke();
+          }
+
+          requestAnimationFrame(draw);
+        }
+
+        requestAnimationFrame(draw);
+        showStatus("Canvas blue-white-cyan mode");
+      }
+
+      try {
+        startWebGL();
+      } catch (error) {
+        console.error("WebGL 启动失败，已切换 Canvas：", error);
+        startCanvasFallback();
+      }
+    })();
+  </script>
+</body>
+</html>

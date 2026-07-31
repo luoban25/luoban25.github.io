@@ -11,17 +11,21 @@
     <link rel="stylesheet" href="./css/global.css" />
     <link rel="stylesheet" href="./css/layout.css?v=20260730b" />
     <link rel="stylesheet" href="./css/components.css" />
-    <link rel="stylesheet" href="./css/pages.css?v=20260730i" />
+    <link rel="stylesheet" href="./css/pages.css?v=20260731e" />
     <link rel="stylesheet" href="./css/responsive.css?v=20260730" />
+    <link rel="stylesheet" href="./css/fluid-progress.css?v=20260731b" />
     <script src="./js/projects.js" defer></script>
     <script src="./js/motion.js" defer></script>
-    <script src="./js/shared-ui.js?v=20260730d" defer></script>
+    <script src="./js/shared-ui.js?v=20260731" defer></script>
     <script src="./js/page-flow.js?v=20260730" defer></script>
     <script src="./js/skills.js" defer></script>
+    <script src="./js/spectra.js" defer></script>
+    <script src="./js/fluid-progress.js?v=20260731" defer></script>
+    <script src="./js/fluid-progress-interactive.js?v=20260731c" defer></script>
   </head>
   <body data-page="works">
     <div data-site-header data-active="works"></div>
-    <main class="home-flow page-enter" id="main-content">
+    <main class="home-flow spectra-flow page-enter" id="main-content">
       <section class="page-shell works-page home-panel home-panel--works" id="works">
         <div class="works-layout" aria-labelledby="works-title">
           <aside class="brand-story">
@@ -55,6 +59,152 @@
           </aside>
           <section class="skill-grid" data-skill-grid aria-live="polite" aria-label="Skills"></section>
         </div>
+      </section>
+
+      <section class="page-shell catalog-page home-panel home-panel--spectra spectra-panel spectra-panel--cards" id="spectra">
+        <section class="catalog-layout" aria-labelledby="spectra-title">
+          <aside class="catalog-sidebar">
+            <div>
+              <p class="eyebrow">GENERATIVE COLOR STUDIES</p>
+              <h2 class="catalog-title pixel-text" id="spectra-title">SPECTRA</h2>
+              <p class="catalog-tagline">COLOR AS<br />A LIVING SYSTEM.</p>
+              <p class="body-cn">色彩不是静态的，<br />而是一种会呼吸的系统。</p>
+            </div>
+            <nav class="filter-list" data-spectra-filters aria-label="Filter Spectra studies"></nav>
+            <span class="page-number tabular" aria-label="Page 3 of 5">03 / 05</span>
+          </aside>
+          <section class="spectra-grid" data-spectra-grid aria-live="polite" aria-label="Spectra studies"></section>
+        </section>
+      </section>
+
+      <section class="page-shell catalog-page home-panel home-panel--spectra spectra-panel fluid-progress-panel" id="fluid-progress">
+        <section class="catalog-layout" aria-labelledby="fluid-progress-title">
+          <aside class="catalog-sidebar fluid-progress-sidebar">
+            <div>
+              <p class="eyebrow">CHROMATIC PROCESS STUDIES</p>
+              <h2 class="catalog-title pixel-text" id="fluid-progress-title">FLUID<br />PROGRESS</h2>
+              <p class="catalog-tagline">COLOR MOVES.<br />SYSTEMS ADVANCE.</p>
+              <p class="body-cn">Six responsive liquid progress studies,<br />each driven by an independent color system.</p>
+            </div>
+            <nav class="fluid-progress-index" data-fluid-progress-filters aria-label="Select Fluid Progress theme">
+              <button class="filter-button fluid-progress-filter is-active" type="button" data-fluid-theme="all" aria-pressed="true"><span aria-hidden="true"></span>ALL</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-theme="lime-teal" aria-pressed="false" aria-controls="fluid-progress-card-lime-teal"><span aria-hidden="true"></span>LIME TEAL</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-theme="coral-sunset" aria-pressed="false" aria-controls="fluid-progress-card-coral-sunset"><span aria-hidden="true"></span>CORAL SUNSET</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-theme="blue-cyan" aria-pressed="false" aria-controls="fluid-progress-card-blue-cyan"><span aria-hidden="true"></span>BLUE CYAN</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-theme="violet-magenta" aria-pressed="false" aria-controls="fluid-progress-card-violet-magenta"><span aria-hidden="true"></span>VIOLET MAGENTA</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-theme="gold-amber" aria-pressed="false" aria-controls="fluid-progress-card-gold-amber"><span aria-hidden="true"></span>GOLD AMBER</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-theme="mint-jade" aria-pressed="false" aria-controls="fluid-progress-card-mint-jade"><span aria-hidden="true"></span>MINT JADE</button>
+            </nav>
+            <span class="page-number tabular" aria-label="Page 4 of 5">04 / 05</span>
+          </aside>
+
+          <section class="fluid-progress-grid" data-fluid-progress-grid aria-label="Fluid Progress color studies">
+            <article class="fluid-progress-card filterable-card" id="fluid-progress-card-lime-teal" data-fluid-theme-card="lime-teal">
+              <header><span class="tabular">01</span><h3>LIME TEAL</h3></header>
+              <div class="fluid-progress-frame">
+                <iframe src="./fluid-progress/theme-01-lime-teal/index.html" title="Lime Teal fluid progress study" loading="eager"></iframe>
+              </div>
+              <a class="text-link fluid-progress-card__view" href="./fluid-progress/theme-01-lime-teal/index.html" target="_blank" rel="noopener">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
+            </article>
+            <article class="fluid-progress-card filterable-card" id="fluid-progress-card-coral-sunset" data-fluid-theme-card="coral-sunset">
+              <header><span class="tabular">02</span><h3>CORAL SUNSET</h3></header>
+              <div class="fluid-progress-frame">
+                <iframe src="./fluid-progress/theme-02-coral-sunset/index.html" title="Coral Sunset fluid progress study" loading="eager"></iframe>
+              </div>
+              <a class="text-link fluid-progress-card__view" href="./fluid-progress/theme-02-coral-sunset/index.html" target="_blank" rel="noopener">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
+            </article>
+            <article class="fluid-progress-card filterable-card" id="fluid-progress-card-blue-cyan" data-fluid-theme-card="blue-cyan">
+              <header><span class="tabular">03</span><h3>BLUE CYAN</h3></header>
+              <div class="fluid-progress-frame">
+                <iframe src="./fluid-progress/theme-03-blue-cyan/index.html" title="Blue Cyan fluid progress study" loading="lazy"></iframe>
+              </div>
+              <a class="text-link fluid-progress-card__view" href="./fluid-progress/theme-03-blue-cyan/index.html" target="_blank" rel="noopener">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
+            </article>
+            <article class="fluid-progress-card filterable-card" id="fluid-progress-card-violet-magenta" data-fluid-theme-card="violet-magenta">
+              <header><span class="tabular">04</span><h3>VIOLET MAGENTA</h3></header>
+              <div class="fluid-progress-frame">
+                <iframe src="./fluid-progress/theme-04-violet-magenta/index.html" title="Violet Magenta fluid progress study" loading="lazy"></iframe>
+              </div>
+              <a class="text-link fluid-progress-card__view" href="./fluid-progress/theme-04-violet-magenta/index.html" target="_blank" rel="noopener">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
+            </article>
+            <article class="fluid-progress-card filterable-card" id="fluid-progress-card-gold-amber" data-fluid-theme-card="gold-amber">
+              <header><span class="tabular">05</span><h3>GOLD AMBER</h3></header>
+              <div class="fluid-progress-frame">
+                <iframe src="./fluid-progress/theme-05-gold-amber/index.html" title="Gold Amber fluid progress study" loading="lazy"></iframe>
+              </div>
+              <a class="text-link fluid-progress-card__view" href="./fluid-progress/theme-05-gold-amber/index.html" target="_blank" rel="noopener">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
+            </article>
+            <article class="fluid-progress-card filterable-card" id="fluid-progress-card-mint-jade" data-fluid-theme-card="mint-jade">
+              <header><span class="tabular">06</span><h3>MINT JADE</h3></header>
+              <div class="fluid-progress-frame">
+                <iframe src="./fluid-progress/theme-06-mint-jade/index.html" title="Mint Jade fluid progress study" loading="lazy"></iframe>
+              </div>
+              <a class="text-link fluid-progress-card__view" href="./fluid-progress/theme-06-mint-jade/index.html" target="_blank" rel="noopener">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
+            </article>
+          </section>
+        </section>
+      </section>
+
+      <section class="page-shell catalog-page home-panel home-panel--spectra spectra-panel fluid-interactive-panel" id="fluid-response">
+        <section class="catalog-layout" aria-labelledby="fluid-interactive-title">
+          <aside class="catalog-sidebar fluid-interactive-sidebar">
+            <div>
+              <p class="eyebrow">INTERACTIVE PROCESS STUDIES</p>
+              <h2 class="catalog-title pixel-text" id="fluid-interactive-title">FLUID<br />RESPONSE</h2>
+              <p class="catalog-tagline">DRAG THE FLOW.<br />SET THE SIGNAL.</p>
+              <p class="body-cn">Six responsive progress systems,<br />each shaped directly by pointer movement.</p>
+            </div>
+            <nav class="fluid-progress-index" data-fluid-interactive-filters aria-label="Select interactive Fluid Progress theme">
+              <button class="filter-button fluid-progress-filter is-active" type="button" data-fluid-interactive-theme="all" aria-pressed="true"><span aria-hidden="true"></span>ALL</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-interactive-theme="clean" aria-pressed="false" aria-controls="fluid-interactive-card-clean"><span aria-hidden="true"></span>CLEAN</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-interactive-theme="blue-purple" aria-pressed="false" aria-controls="fluid-interactive-card-blue-purple"><span aria-hidden="true"></span>BLUE PURPLE</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-interactive-theme="green-yellow" aria-pressed="false" aria-controls="fluid-interactive-card-green-yellow"><span aria-hidden="true"></span>GREEN YELLOW</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-interactive-theme="blue-white-cyan" aria-pressed="false" aria-controls="fluid-interactive-card-blue-white-cyan"><span aria-hidden="true"></span>BLUE WHITE CYAN</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-interactive-theme="purple-navy" aria-pressed="false" aria-controls="fluid-interactive-card-purple-navy"><span aria-hidden="true"></span>PURPLE NAVY</button>
+              <button class="filter-button fluid-progress-filter" type="button" data-fluid-interactive-theme="orange-yellowgreen" aria-pressed="false" aria-controls="fluid-interactive-card-orange-yellowgreen"><span aria-hidden="true"></span>ORANGE YELLOW-GREEN</button>
+            </nav>
+            <span class="page-number tabular" aria-label="Page 5 of 5">05 / 05</span>
+          </aside>
+
+          <section class="fluid-progress-grid fluid-interactive-grid" data-fluid-interactive-grid aria-live="polite" aria-label="Interactive Fluid Progress color studies">
+            <article class="fluid-progress-card fluid-interactive-card filterable-card" id="fluid-interactive-card-clean" data-fluid-interactive-card="clean">
+              <header><span class="tabular">01</span><h3>CLEAN</h3></header>
+              <div class="fluid-interactive-frame">
+                <iframe data-src="./fluid-progress-interactive/01-clean-transparent.html" title="Clean interactive fluid progress study" loading="lazy"></iframe>
+              </div>
+            </article>
+            <article class="fluid-progress-card fluid-interactive-card filterable-card" id="fluid-interactive-card-blue-purple" data-fluid-interactive-card="blue-purple">
+              <header><span class="tabular">02</span><h3>BLUE PURPLE</h3></header>
+              <div class="fluid-interactive-frame">
+                <iframe data-src="./fluid-progress-interactive/02-blue-purple.html" title="Blue Purple interactive fluid progress study" loading="lazy"></iframe>
+              </div>
+            </article>
+            <article class="fluid-progress-card fluid-interactive-card filterable-card" id="fluid-interactive-card-green-yellow" data-fluid-interactive-card="green-yellow">
+              <header><span class="tabular">03</span><h3>GREEN YELLOW</h3></header>
+              <div class="fluid-interactive-frame">
+                <iframe data-src="./fluid-progress-interactive/03-green-yellow.html" title="Green Yellow interactive fluid progress study" loading="lazy"></iframe>
+              </div>
+            </article>
+            <article class="fluid-progress-card fluid-interactive-card filterable-card" id="fluid-interactive-card-blue-white-cyan" data-fluid-interactive-card="blue-white-cyan">
+              <header><span class="tabular">04</span><h3>BLUE WHITE CYAN</h3></header>
+              <div class="fluid-interactive-frame">
+                <iframe data-src="./fluid-progress-interactive/04-blue-white-cyan.html" title="Blue White Cyan interactive fluid progress study" loading="lazy"></iframe>
+              </div>
+            </article>
+            <article class="fluid-progress-card fluid-interactive-card filterable-card" id="fluid-interactive-card-purple-navy" data-fluid-interactive-card="purple-navy">
+              <header><span class="tabular">05</span><h3>PURPLE NAVY</h3></header>
+              <div class="fluid-interactive-frame">
+                <iframe data-src="./fluid-progress-interactive/05-purple-navy.html" title="Purple Navy interactive fluid progress study" loading="lazy"></iframe>
+              </div>
+            </article>
+            <article class="fluid-progress-card fluid-interactive-card filterable-card" id="fluid-interactive-card-orange-yellowgreen" data-fluid-interactive-card="orange-yellowgreen">
+              <header><span class="tabular">06</span><h3>ORANGE YELLOW-GREEN</h3></header>
+              <div class="fluid-interactive-frame">
+                <iframe data-src="./fluid-progress-interactive/06-orange-yellowgreen.html" title="Orange Yellow-Green interactive fluid progress study" loading="lazy"></iframe>
+              </div>
+            </article>
+          </section>
+        </section>
       </section>
     </main>
     <div data-site-footer></div>

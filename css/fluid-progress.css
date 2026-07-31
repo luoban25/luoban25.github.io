@@ -67,11 +67,7 @@
 }
 
 .fluid-progress-grid.is-single .fluid-progress-card__view {
-  display: inline-flex;
-  margin: 8px auto 0;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 600;
+  display: none;
 }
 
 .fluid-progress-card header {
@@ -85,16 +81,17 @@
 }
 
 .fluid-progress-card header > span {
-  color: var(--soft-muted);
-  font-size: 8px;
+  display: none;
 }
 
 .fluid-progress-card h3 {
+  width: 100%;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(11px, .68vw, 13px);
-  font-weight: 700;
+  font-size: clamp(15px, 1vw, 18px);
+  font-weight: 800;
   line-height: 1.2;
+  text-align: center;
 }
 
 .fluid-progress-frame {
@@ -142,4 +139,242 @@
     gap: 20px;
   }
 
+}
+
+/* SPECTRA DESKTOP SCALE — 2026-07-31 */
+@media (min-width: 1280px) {
+  html:has(body[data-page="spectra"]) {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: var(--header-height);
+  }
+
+  body[data-page="spectra"] .spectra-panel,
+  body[data-page="spectra"] .fluid-progress-panel {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  body[data-page="spectra"] .spectra-panel--cards {
+    min-height: min(830px, calc(100svh - var(--header-height)));
+  }
+
+  body[data-page="spectra"] .fluid-progress-panel {
+    min-height: calc(100svh - var(--header-height));
+    padding-top: clamp(72px, 7vh, 96px);
+    padding-bottom: clamp(72px, 7vh, 96px);
+    scroll-margin-top: calc(-1 * var(--header-height));
+  }
+
+  body[data-page="spectra"] .fluid-progress-panel .catalog-layout {
+    margin-block: 0;
+    align-content: start;
+  }
+
+  body[data-page="spectra"] .fluid-progress-sidebar {
+    min-height: 0;
+  }
+}
+
+/* SPECTRA DESKTOP VISUAL SCALE */
+@media (min-width: 1280px) {
+  body[data-page="spectra"] .spectra-panel.page-shell,
+  body[data-page="spectra"] .fluid-progress-panel.page-shell {
+    width: min(92vw, 1680px);
+    max-width: 1680px;
+  }
+
+  body[data-page="spectra"] .catalog-layout {
+    column-gap: clamp(22px, 1.5vw, 30px);
+  }
+
+  body[data-page="spectra"] .catalog-sidebar {
+    padding-right: clamp(12px, 1.2vw, 22px);
+  }
+
+  body[data-page="spectra"] .spectra-grid,
+  body[data-page="spectra"] .fluid-progress-grid {
+    column-gap: clamp(28px, 1.7vw, 34px);
+  }
+
+  body[data-page="spectra"] .spectra-grid {
+    row-gap: clamp(44px, 3.4vw, 66px);
+  }
+
+  body[data-page="spectra"] .spectra-study__frame {
+    height: clamp(146px, 9.4vw, 180px);
+    aspect-ratio: auto;
+  }
+
+  body[data-page="spectra"] .fluid-progress-frame {
+    height: clamp(202px, 10.6vw, 212px);
+  }
+
+  body[data-page="spectra"] .fluid-progress-frame iframe {
+    clip-path: inset(calc((100% - 128px) / 2) 24px round 32px);
+  }
+
+  body[data-page="spectra"] .catalog-title {
+    font-size: clamp(58px, 3.45vw, 66px);
+  }
+
+  body[data-page="spectra"] .fluid-progress-panel .catalog-title {
+    font-size: clamp(53px, 3.45vw, 66px);
+  }
+
+  body[data-page="spectra"] .catalog-tagline {
+    font-size: clamp(18px, 1.1vw, 21px);
+  }
+
+  body[data-page="spectra"] .spectra-panel,
+  body[data-page="spectra"] .fluid-progress-panel {
+    min-height: calc(100svh - var(--header-height));
+  }
+}
+
+/* FLUID RESPONSE — THIRD SPECTRA CHAPTER */
+.fluid-interactive-panel {
+  border-top: 1px solid var(--line);
+}
+
+.fluid-interactive-panel .catalog-layout {
+  margin-block: 0;
+  align-content: start;
+}
+
+.fluid-interactive-sidebar {
+  min-height: 0;
+}
+
+.fluid-interactive-frame {
+  width: 100%;
+  min-width: 0;
+  height: 232px;
+  overflow: visible;
+  background: transparent;
+  container-type: inline-size;
+}
+
+.fluid-interactive-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  clip-path: inset(calc((100% - 184px) / 2) 18px round 38px);
+}
+
+@media (min-width: 1280px) {
+  body[data-page="spectra"] .fluid-interactive-panel .catalog-title {
+    font-size: clamp(53px, 3.45vw, 66px);
+  }
+
+  body[data-page="spectra"] .fluid-interactive-frame {
+    height: clamp(228px, 12vw, 244px);
+  }
+}
+
+/* SPECTRA CHAPTERS ON HOME */
+body[data-page="works"] .home-panel--spectra {
+  border-top: 1px solid var(--line);
+}
+
+body[data-page="works"] .home-panel--spectra .catalog-title {
+  font-size: clamp(42px, 3.9vw, 60px);
+}
+
+:root[data-theme="dark"] body[data-page="works"] .home-panel--spectra .spectra-study__frame iframe {
+  clip-path: inset(6px round 999px);
+}
+
+@media (min-width: 1024px) {
+  body[data-page="works"] .home-panel--spectra .catalog-layout {
+    margin-block: 0 auto;
+  }
+
+  body[data-page="works"] .home-panel--spectra .filter-button {
+    font-size: clamp(10px, .62vw, 12px);
+    font-weight: 600;
+  }
+
+  body[data-page="works"] .home-panel--spectra .catalog-sidebar .filter-list {
+    gap: clamp(10px, .75vw, 13px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .spectra-grid {
+    padding-top: clamp(88px, 8vw, 116px);
+    row-gap: clamp(34px, 2.6vw, 44px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .spectra-grid.is-single {
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  body[data-page="works"] .home-panel--spectra.page-shell {
+    width: min(92vw, 1680px);
+    max-width: 1680px;
+    min-height: calc(100svh - var(--header-height));
+  }
+
+  body[data-page="works"] .home-panel--spectra.fluid-progress-panel {
+    padding-top: clamp(72px, 7vh, 96px);
+    padding-bottom: clamp(72px, 7vh, 96px);
+  }
+
+  body[data-page="works"] .home-panel--spectra.fluid-progress-panel .catalog-layout {
+    margin-block: 0;
+    align-content: start;
+  }
+
+  body[data-page="works"] .home-panel--spectra .fluid-progress-sidebar {
+    min-height: 0;
+  }
+
+  body[data-page="works"] .home-panel--spectra .catalog-layout {
+    column-gap: clamp(22px, 1.5vw, 30px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .catalog-sidebar {
+    padding-right: clamp(12px, 1.2vw, 22px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .spectra-grid,
+  body[data-page="works"] .home-panel--spectra .fluid-progress-grid {
+    column-gap: clamp(28px, 1.7vw, 34px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .spectra-grid {
+    row-gap: clamp(44px, 3.4vw, 66px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .spectra-study__frame {
+    height: clamp(146px, 9.4vw, 180px);
+    aspect-ratio: auto;
+  }
+
+  body[data-page="works"] .home-panel--spectra .fluid-progress-frame {
+    height: clamp(202px, 10.6vw, 212px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .fluid-progress-frame iframe {
+    clip-path: inset(calc((100% - 128px) / 2) 24px round 32px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .catalog-title {
+    font-size: clamp(58px, 3.45vw, 66px);
+  }
+
+  body[data-page="works"] .home-panel--spectra.fluid-progress-panel .catalog-title,
+  body[data-page="works"] .home-panel--spectra.fluid-interactive-panel .catalog-title {
+    font-size: clamp(53px, 3.45vw, 66px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .catalog-tagline {
+    font-size: clamp(18px, 1.1vw, 21px);
+  }
+
+  body[data-page="works"] .home-panel--spectra .fluid-interactive-frame {
+    height: clamp(228px, 12vw, 244px);
+  }
 }

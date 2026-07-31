@@ -8,6 +8,7 @@
     const grid = document.querySelector("[data-spectra-grid]");
     if (!filters || !grid) return;
     let filterTimer = 0;
+    const previewVersion = "20260731.2";
 
     const options = [{ slug: "all", title: "ALL" }, ...spectraProjects];
     filters.innerHTML = options.map((project, index) => `<button class="filter-button${index === 0 ? " is-active" : ""}" type="button" data-filter="${project.slug}" aria-pressed="${index === 0}"><span aria-hidden="true"></span>${ui.escapeHtml(project.title)}</button>`).join("");
@@ -27,12 +28,39 @@
         <a class="circle-arrow spectra-study__link" href="${ui.projectUrl(project, "spectra")}" aria-label="View ${ui.escapeHtml(project.title)} details">→</a>
         <a class="text-link spectra-study__view" href="${ui.projectUrl(project, "spectra")}">VIEW PROJECT <span aria-hidden="true">&rarr;</span></a>
       `;
+      const frameHost = article.querySelector(".spectra-study__frame");
       const previewUrl = new URL(project.embedUrl, window.location.href);
       previewUrl.searchParams.set("collection", "grid");
-      ui.renderProjectPreview(article.querySelector(".spectra-study__frame"), {
+      previewUrl.searchParams.set("shell", previewVersion);
+      ui.renderProjectPreview(frameHost, {
         ...project,
         embedUrl: previewUrl.href,
-      });
+      }, { eager: true });
+      const frame = frameHost.querySelector("iframe");
+      if (frame) {
+        let recoveryAttempted = false;
+        const verifyPreview = () => {
+          if (recoveryAttempted) return;
+          try {
+            const previewDocument = frame.contentDocument;
+            const shell = previewDocument?.querySelector(".spectra-card-shell");
+            const canvas = previewDocument?.querySelector("canvas");
+            const gl = canvas?.getContext("webgl2") || canvas?.getContext("webgl");
+            const contextLost = Boolean(gl?.isContextLost?.());
+            if (shell && canvas && !contextLost) return;
+            recoveryAttempted = true;
+            const recoveryUrl = new URL(previewUrl.href);
+            recoveryUrl.searchParams.set("recovery", "1");
+            frame.src = recoveryUrl.href;
+          } catch {
+            // Cross-origin previews cannot be inspected; their native load remains untouched.
+          }
+        };
+        frame.addEventListener("load", () => {
+          window.setTimeout(verifyPreview, 900);
+        });
+        window.setTimeout(verifyPreview, 3200);
+      }
       article.addEventListener("mouseenter", () => {
         grid.classList.add("has-hover");
         article.classList.add("is-hovered");
