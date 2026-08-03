@@ -39,6 +39,10 @@ body[data-page="works"] #works .brand-title {
   text-wrap: balance;
 }
 
+body[data-page="works"] #works .brand-title .pixel-text {
+  color: #d7f204;
+}
+
 body[data-page="works"] #works .brand-statement,
 body[data-page="works"] #works .brand-disciplines {
   text-wrap: pretty;
