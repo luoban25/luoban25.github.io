@@ -1,0 +1,46 @@
+/* Desktop-only hybrid chapter transitions. Existing responsive flow remains the fallback. */
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html:has(body.has-home-section-transitions) {
+    scroll-snap-type: none !important;
+    overflow-x: clip;
+  }
+
+  body.has-home-section-transitions {
+    overflow-x: clip;
+  }
+
+  body.has-home-section-transitions::before {
+    display: none !important;
+    animation: none !important;
+  }
+
+  body.has-home-section-transitions .home-panel {
+    position: relative;
+    top: auto;
+    overflow: visible;
+    overflow-clip-margin: 0;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
+  }
+
+  body.has-home-section-transitions .home-panel > .works-layout,
+  body.has-home-section-transitions .home-panel > .catalog-layout {
+    transform-origin: center top;
+  }
+
+  body.has-home-section-transitions .home-panel--works .works-layout,
+  body.has-home-section-transitions #spectra .catalog-sidebar,
+  body.has-home-section-transitions #spectra .spectra-grid,
+  body.has-home-section-transitions #fluid-progress .catalog-sidebar,
+  body.has-home-section-transitions #fluid-progress .fluid-progress-grid {
+    animation: none !important;
+  }
+
+  body.has-home-section-transitions #spectra .catalog-sidebar,
+  body.has-home-section-transitions #spectra .spectra-grid,
+  body.has-home-section-transitions #fluid-progress .catalog-sidebar,
+  body.has-home-section-transitions #fluid-progress .fluid-progress-grid {
+    opacity: 1;
+    transform: none;
+  }
+}

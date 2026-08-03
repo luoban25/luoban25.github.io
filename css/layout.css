@@ -136,6 +136,34 @@
   transform: scaleX(1);
 }
 
+@media (min-width: 1024px) {
+  .site-nav {
+    font-size: clamp(12px, .72vw, 14px);
+    letter-spacing: .045em;
+  }
+
+  .site-nav__link {
+    min-height: 44px;
+    padding: 15px 2px 13px;
+    line-height: 1;
+  }
+
+  .site-nav__link::before {
+    top: 20px;
+    left: -12px;
+    width: 3px;
+    height: 3px;
+  }
+
+  .site-nav__link::after {
+    right: 2px;
+    bottom: 7px;
+    left: 2px;
+    height: 2px;
+    border-radius: 999px;
+  }
+}
+
 .header-tools {
   justify-content: flex-end;
   gap: 12px;

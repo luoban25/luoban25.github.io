@@ -16,14 +16,8 @@
   scroll-margin-top: 0;
 }
 
-.home-panel--skills {
-  border-top: 1px solid var(--line);
-}
-
-@media (min-width: 1024px) {
-  .home-panel--skills .catalog-layout {
-    margin-block: auto;
-  }
+body[data-page="works"] .home-panel.home-panel--spectra {
+  border-top: 0;
 }
 
 .works-page {
@@ -63,12 +57,6 @@ body[data-page="works"] .works-layout {
 
   .home-panel--works .works-layout {
     gap: clamp(32px, 3vw, 64px);
-  }
-
-  .home-panel--skills {
-    width: calc(100% - clamp(48px, 6vw, 96px));
-    max-width: 1366px;
-    min-height: calc(100svh - 73px);
   }
 
   .home-panel--works .brand-story {
@@ -118,34 +106,6 @@ body[data-page="works"] .works-layout {
     font-size: 10px;
   }
 
-  .home-panel--skills .catalog-tagline {
-    font-size: clamp(16px, 1.05vw, 18px);
-    font-weight: 600;
-    line-height: 1.45;
-    text-wrap: balance;
-  }
-
-  .home-panel--skills .catalog-sidebar .body-cn {
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.75;
-    text-wrap: pretty;
-  }
-
-  .home-panel--skills .catalog-sidebar .filter-list {
-    gap: 10px;
-  }
-
-  .home-panel--skills .filter-button {
-    min-height: 44px;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: .03em;
-  }
-
-  .home-panel--skills .filter-button.is-active {
-    font-weight: 600;
-  }
 }
 
 .brand-story {
@@ -915,14 +875,9 @@ body[data-page="spectra"] .catalog-title {
     body[data-page="works"] .home-panel--works .works-layout {
       animation: home-first-panel-exit linear both;
       animation-timeline: scroll(root block);
-      animation-range: 0 92svh;
+      animation-range: 0 118svh;
     }
 
-    body[data-page="works"] .home-panel--skills .catalog-layout {
-      animation: home-second-panel-enter linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 18svh 92svh;
-    }
   }
 }
 
@@ -944,18 +899,6 @@ body[data-page="spectra"] .catalog-title {
   }
 }
 
-@keyframes home-second-panel-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 7svh, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
 @media (min-width: 1280px) and (prefers-reduced-motion: reduce) {
   body[data-page="works"]::before {
     display: none;
@@ -966,15 +909,14 @@ body[data-page="spectra"] .catalog-title {
     top: auto;
   }
 
-  body[data-page="works"] .home-panel--works .works-layout,
-  body[data-page="works"] .home-panel--skills .catalog-layout {
+  body[data-page="works"] .home-panel--works .works-layout {
     animation: none;
     opacity: 1;
     transform: none;
   }
 }
 
-/* HOME CHAPTERS 03–05: PARALLAX + PROXIMITY SNAP */
+/* HOME CHAPTERS 02–04: PARALLAX + PROXIMITY SNAP */
 @media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
   html:has(body[data-page="works"]) {
     scroll-snap-type: y proximity;
@@ -999,7 +941,7 @@ body[data-page="spectra"] .catalog-title {
 
   @supports (animation-timeline: view()) {
     body[data-page="works"] .home-flow {
-      timeline-scope: --chapter-spectra, --chapter-progress, --chapter-response;
+      timeline-scope: --chapter-spectra, --chapter-progress;
     }
 
     body[data-page="works"] #spectra {
@@ -1008,10 +950,6 @@ body[data-page="spectra"] .catalog-title {
 
     body[data-page="works"] #fluid-progress {
       view-timeline: --chapter-progress block;
-    }
-
-    body[data-page="works"] #fluid-response {
-      view-timeline: --chapter-response block;
     }
 
     body[data-page="works"] #spectra .catalog-sidebar {
@@ -1029,26 +967,15 @@ body[data-page="spectra"] .catalog-title {
     body[data-page="works"] #fluid-progress .catalog-sidebar {
       animation: chapter-progress-sidebar linear both;
       animation-timeline: --chapter-progress;
-      animation-range: entry 0% cover 20%;
+      animation-range: entry 0% cover 38%;
     }
 
     body[data-page="works"] #fluid-progress .fluid-progress-grid {
       animation: chapter-progress-grid linear both;
       animation-timeline: --chapter-progress;
-      animation-range: entry 2% cover 22%;
+      animation-range: entry 2% cover 42%;
     }
 
-    body[data-page="works"] #fluid-response .catalog-sidebar {
-      animation: chapter-response-sidebar linear both;
-      animation-timeline: --chapter-response;
-      animation-range: entry 0% cover 20%;
-    }
-
-    body[data-page="works"] #fluid-response .fluid-interactive-grid {
-      animation: chapter-response-grid linear both;
-      animation-timeline: --chapter-response;
-      animation-range: entry 2% cover 24%;
-    }
   }
 }
 
@@ -1058,7 +985,7 @@ body[data-page="spectra"] .catalog-title {
     transform: translate3d(-32vw, 10vh, 0);
   }
 
-  22% {
+  30% {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
@@ -1080,7 +1007,7 @@ body[data-page="spectra"] .catalog-title {
     transform: translate3d(42vw, -6vh, 0);
   }
 
-  22% {
+  30% {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
@@ -1117,29 +1044,5 @@ body[data-page="spectra"] .catalog-title {
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes chapter-response-sidebar {
-  from {
-    opacity: 0;
-    transform: translate3d(-34vw, 58vh, 0) rotate(-3.5deg);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0);
-  }
-}
-
-@keyframes chapter-response-grid {
-  from {
-    opacity: .06;
-    transform: translate3d(44vw, 72vh, 0) rotate(3deg) scale(.88);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0) scale(1);
   }
 }
