@@ -15,6 +15,7 @@
       const article = document.createElement("article");
       article.className = "skill-card filterable-card";
       article.dataset.categories = (project.filters || []).join(" ");
+      article.dataset.staticPreview = project.staticPreview || "";
       article.innerHTML = `
         <div class="skill-card__preview"></div>
         <div class="skill-card__body">

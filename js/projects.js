@@ -99,8 +99,18 @@
       detailUrl: "./project.html?slug=wormhole-admin",
       accent: "#111111",
     },
-    { ...workProjects[1], number: "02", filters: ["visual", "generative"] },
-    { ...workProjects[2], number: "03", filters: ["visual", "simulation"] },
+    {
+      ...workProjects[1],
+      number: "02",
+      filters: ["visual", "generative"],
+      staticPreview: "./images/skills/floworb.jpg",
+    },
+    {
+      ...workProjects[2],
+      number: "03",
+      filters: ["visual", "simulation"],
+      staticPreview: "./images/skills/wave-physics.jpg",
+    },
     {
       slug: "fluid-dropdown",
       number: "04",
@@ -115,8 +125,18 @@
       detailUrl: "./project.html?slug=fluid-dropdown",
       accent: "#111111",
     },
-    { ...workProjects[4], number: "05", filters: ["visual", "generative"] },
-    { ...workProjects[5], number: "06", filters: ["visual", "generative", "system"] },
+    {
+      ...workProjects[4],
+      number: "05",
+      filters: ["visual", "generative"],
+      staticPreview: "./images/skills/spectra.jpg",
+    },
+    {
+      ...workProjects[5],
+      number: "06",
+      filters: ["visual", "generative", "system"],
+      staticPreview: "./images/skills/archive.jpg",
+    },
   ];
 
   const spectraProjects = [

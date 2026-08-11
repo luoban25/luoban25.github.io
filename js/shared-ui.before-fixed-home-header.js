@@ -2,7 +2,6 @@
   "use strict";
 
   const data = window.AICreativeLabData;
-  let homeHeaderResizeObserver = null;
 
   const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;",
@@ -46,7 +45,7 @@
           <nav class="site-nav" id="site-navigation" aria-label="Primary navigation">${links}</nav>
           <div class="header-tools">
             <button class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false"><span aria-hidden="true">☼</span></button>
-            <button class="sign-in-button" type="button" data-sign-in aria-haspopup="dialog" aria-controls="auth-dialog">
+            <button class="sign-in-button" type="button" data-sign-in>
               <svg viewBox="0 0 18 18" aria-hidden="true">
                 <circle cx="9" cy="5.25" r="3.25" fill="currentColor" />
                 <path d="M3.25 15.75c0-3.15 2.35-5.25 5.75-5.25s5.75 2.1 5.75 5.25H3.25Z" fill="currentColor" />
@@ -94,29 +93,6 @@
     try { window.localStorage.setItem("acl-theme", selected); } catch (_) {}
   }
 
-  function syncHomeHeaderOffset() {
-    if (document.body.dataset.page !== "works") return;
-    const header = document.querySelector(".site-header");
-    if (!header) return;
-    const height = Math.ceil(header.getBoundingClientRect().height);
-    document.documentElement.style.setProperty("--site-header-offset", `${height}px`);
-  }
-
-  function initHomeHeaderOffset() {
-    if (document.body.dataset.page !== "works") return;
-    const header = document.querySelector(".site-header");
-    if (!header) return;
-
-    syncHomeHeaderOffset();
-    if ("ResizeObserver" in window) {
-      homeHeaderResizeObserver?.disconnect();
-      homeHeaderResizeObserver = new ResizeObserver(syncHomeHeaderOffset);
-      homeHeaderResizeObserver.observe(header);
-    } else {
-      window.addEventListener("resize", syncHomeHeaderOffset, { passive: true });
-    }
-  }
-
   function initShell() {
     document.querySelectorAll("[data-site-header]").forEach((host) => {
       host.innerHTML = headerTemplate(activePage(host));
@@ -124,7 +100,6 @@
     document.querySelectorAll("[data-site-footer]").forEach((host) => {
       host.innerHTML = footerTemplate();
     });
-    initHomeHeaderOffset();
 
     let savedTheme = "light";
     try { savedTheme = window.localStorage.getItem("acl-theme") || "light"; } catch (_) {}
@@ -140,7 +115,6 @@
       menu.setAttribute("aria-expanded", String(!open));
       menu.setAttribute("aria-label", open ? "Open navigation" : "Close navigation");
       navigation?.classList.toggle("is-open", !open);
-      window.requestAnimationFrame(syncHomeHeaderOffset);
     });
 
     const dialog = document.querySelector("[data-wechat-dialog]");

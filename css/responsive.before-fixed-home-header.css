@@ -44,10 +44,6 @@
 }
 
 @media (max-width: 1023px) {
-  :root {
-    --site-header-offset: 114px;
-  }
-
   .site-header__inner {
     grid-template-columns: 1fr auto;
   }
@@ -191,7 +187,6 @@
     --gutter: 16px;
     --grid-gap: 14px;
     --header-height: 70px;
-    --site-header-offset: 70px;
   }
 
   .site-header__inner {

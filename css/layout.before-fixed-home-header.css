@@ -21,19 +21,6 @@
   background: var(--page-bg);
 }
 
-body[data-page="works"] [data-site-header] {
-  min-height: var(--site-header-offset, var(--header-height));
-  flex: 0 0 var(--site-header-offset, var(--header-height));
-}
-
-body[data-page="works"] .site-header {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  width: 100%;
-}
-
 .site-header__inner,
 .site-footer__inner,
 .page-shell {

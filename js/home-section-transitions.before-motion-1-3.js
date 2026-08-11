@@ -63,7 +63,7 @@
               willChange: isActive ? "transform, opacity" : "auto",
             });
             gsap.set(nextPanel, {
-              willChange: isActive ? "transform, opacity" : "auto",
+              willChange: isActive ? "transform, clip-path" : "auto",
             });
           },
         },
@@ -78,8 +78,8 @@
         )
         .fromTo(
           nextPanel,
-          { y: 48, opacity: 0.88 },
-          { y: 0, opacity: 1 },
+          { clipPath: "inset(18% 0% 0% 0%)", y: 48 },
+          { clipPath: "inset(0% 0% 0% 0%)", y: 0 },
           0,
         );
 
@@ -101,7 +101,7 @@
       window.clearTimeout(filterRefreshTimer);
       timelines.forEach((timeline) => timeline.kill());
       gsap.set(contents, { clearProps: "transform,opacity,willChange" });
-      gsap.set(panels, { clearProps: "transform,opacity,willChange" });
+      gsap.set(panels, { clearProps: "transform,clipPath,willChange" });
       body.classList.remove(stateClass);
     };
   });

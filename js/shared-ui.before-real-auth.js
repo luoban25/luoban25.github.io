@@ -46,7 +46,7 @@
           <nav class="site-nav" id="site-navigation" aria-label="Primary navigation">${links}</nav>
           <div class="header-tools">
             <button class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false"><span aria-hidden="true">☼</span></button>
-            <button class="sign-in-button" type="button" data-sign-in aria-haspopup="dialog" aria-controls="auth-dialog">
+            <button class="sign-in-button" type="button" data-sign-in>
               <svg viewBox="0 0 18 18" aria-hidden="true">
                 <circle cx="9" cy="5.25" r="3.25" fill="currentColor" />
                 <path d="M3.25 15.75c0-3.15 2.35-5.25 5.75-5.25s5.75 2.1 5.75 5.25H3.25Z" fill="currentColor" />
