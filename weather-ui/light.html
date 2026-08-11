@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atmos Weather</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background: transparent;
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+        color: #15181D;
+      }
+      .weather-card {
+        position: relative;
+        width: min(460px, calc(100vw - 40px));
+        height: 520px;
+        overflow: hidden;
+        border: 1px solid rgba(20,30,45,.08);
+        border-radius: 29px;
+        background: #F7F9FC;
+        box-shadow: 0 20px 45px rgba(20,30,45,.12), 0 4px 12px rgba(20,30,45,.06);
+        isolation: isolate;
+      }
+      .orb {
+        position: absolute;
+        z-index: 0;
+        top: 93px;
+        left: 15.2%;
+        width: 69.6%;
+        aspect-ratio: 1;
+        height: auto;
+        overflow: hidden;
+        border-radius: 50%;
+        transform: translateZ(0);
+      }
+      #weather-shader { display:block; width:100%; height:100%; }
+      .top, .glass, .days { position:absolute; z-index: 2; }
+      .top { inset: 0 0 auto; height: 122px; padding: 36px 32px; }
+      .city { margin:0; font-size: 22px; line-height: 1.1; font-weight: 560; letter-spacing: -.035em; }
+      .date { margin: 7px 0 0; font-size: 14px; line-height: 1.4; color:#6F7782; letter-spacing: -.024em; }
+      .units { position:absolute; top: 27px; right: 27px; display:flex; gap:2px; padding: 3px; border-radius: 12px; background: rgba(255,255,255,.07); box-shadow: inset 0 1px rgba(255,255,255,.9); }
+      .unit { appearance:none; border:0; padding:8px 11px; border-radius: 9px; background:transparent; color:#6F7782; font: 600 15px/1 inherit; letter-spacing:-.025em; cursor:pointer; transition:.2s cubic-bezier(.22,1,.36,1); }
+      .unit.active { background:#F0F2F5; color:#15181D; box-shadow:0 1px 2px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.08); }
+      .glass {
+        top: 260px;
+        left: 0;
+        width:100%;
+        bottom: 0;
+        height: auto;
+        padding: 30px 30px;
+        /* This is a transparent optical layer, not a second white card. */
+        background: rgba(255,255,255,.42);
+        backdrop-filter: blur(22px) saturate(112%);
+        -webkit-backdrop-filter: blur(22px) saturate(112%);
+        border-top: 1px solid rgba(20,30,45,.08);
+      }
+      .temperature { display:flex; align-items:flex-start; gap: 4px; height: 60px; overflow:visible; }
+      #temperature { display:inline-block; font-family:"KeepCalm", "PingFang SC", sans-serif; font-size: 59px; font-weight: 480; line-height:.9; letter-spacing: -.075em; font-variant-numeric: tabular-nums; }
+      .degree { padding-top: 0; font-family:Arial, sans-serif; font-size: 30px; line-height:1; font-weight:700; letter-spacing:0; }
+      .condition { margin: 14px 0 0; font-size: 17px; line-height:1; font-weight: 480; letter-spacing:-.035em; }
+      .weather-icon { position:absolute; right: 24px; top: 28px; width: 92px; height:92px; stroke:#15181D; fill:none; stroke-width:4.4; stroke-linecap:round; stroke-linejoin:round; }
+      .weather-icon .sun-rays { opacity: 1; transform-origin: 32px 32px; }
+      .weather-icon.sunny .cloud-shape,
+      .weather-icon.cloud circle,
+      .weather-icon.rain circle { opacity: 0; }
+      .weather-icon.cloud .sun-rays, .weather-icon.rain .sun-rays { opacity: 0; }
+      .rain-drops { opacity:0; }
+      .weather-icon.rain .rain-drops { opacity:1; }
+      .days { left: 24px; right: 24px; bottom: 26px; height: 44px; display:flex; align-items:center; justify-content:space-between; gap:3px; }
+      .day { position:relative; min-width:76px; height:42px; border:0; padding:0 10px; border-radius:12px; background:transparent; color:#6F7782; font: 500 14px/1 inherit; letter-spacing:-.025em; cursor:pointer; transition: color .32s ease; }
+      .day::before { content:""; position:absolute; z-index:-1; inset:0; border-radius:12px; background:rgba(255,255,255,.68); box-shadow:0 1px 4px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.06); opacity:0; transform:scale(.72); transition: opacity .3s ease, transform .42s cubic-bezier(.22,1,.36,1); }
+      .day.active { color:#15181D; font-weight:600; }
+      .day.active::before { opacity:1; transform:scale(1); }
+      .hint { position:fixed; bottom:26px; color:#666c74; font-size:12px; letter-spacing:.02em; }
+      @media (max-width: 520px) { .weather-card{height:500px;border-radius:25px} .orb{top:91px}.glass{top:250px}.top{padding:29px 25px}.glass{padding-left:25px}.city{font-size:19px}.days{left:13px;right:13px}.day{min-width:0;padding:0 7px;font-size:13px}.hint{display:none} }
+      @media (prefers-reduced-motion: reduce) { * { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+    </style>
+  </head>
+  <body>
+    <main class="weather-card" aria-label="Weather card">
+      <div class="orb"><canvas id="weather-shader"></canvas></div>
+      <header class="top">
+        <p class="city">芝加哥</p><p class="date" id="date">8月3日 星期一</p>
+        <div class="units" aria-label="Temperature unit"><button class="unit active" data-unit="F">°F</button><button class="unit" data-unit="C">°C</button></div>
+      </header>
+      <section class="glass">
+        <div class="temperature"><span id="temperature">97</span><span class="degree">°</span></div>
+        <p class="condition" id="condition">晴天</p>
+        <svg class="weather-icon sunny" id="icon" viewBox="0 0 64 64" aria-hidden="true">
+          <g class="sun-rays"><path d="M32 7v7M32 50v7M7 32h7M50 32h7M14.3 14.3l5 5M44.7 44.7l5 5M49.7 14.3l-5 5M19.3 44.7l-5 5"/></g>
+          <circle cx="32" cy="32" r="11"/>
+          <g class="cloud-shape"><path d="M17 43h27a9 9 0 0 0 0-18 12 12 0 0 0-22.3-2.7A10.5 10.5 0 0 0 17 43Z"/></g>
+          <g class="rain-drops"><path d="M24 50v5M34 50v5M44 50v5"/></g>
+        </svg>
+        <nav class="days" aria-label="Forecast days">
+          <button class="day active" data-index="0">周一 3</button><button class="day" data-index="1">周二 4</button><button class="day" data-index="2">周三 5</button><button class="day" data-index="3">周四 6</button><button class="day" data-index="4">周五 7</button>
+        </nav>
+      </section>
+    </main>
+    <script>
+      const forecast = [
+        { day:'8月3日 星期一', f:97, type:'晴天', icon:'sunny', palette:[[0.96,0.15,0.015],[1.0,0.41,0.03],[1.0,0.76,0.27]], seed:1.2 },
+        { day:'8月4日 星期二', f:92, type:'多云', icon:'cloud', palette:[[0.20,0.13,0.46],[0.33,0.29,0.82],[0.63,0.47,1.0]], seed:3.7 },
+        { day:'8月5日 星期三', f:79, type:'阴天', icon:'cloud', palette:[[0.12,0.15,0.21],[0.34,0.38,0.45],[0.79,0.81,0.85]], seed:6.4 },
+        { day:'8月6日 星期四', f:72, type:'小雨', icon:'rain', palette:[[0.08,0.14,0.23],[0.27,0.39,0.56],[0.59,0.67,0.77]], seed:9.1 },
+        { day:'8月7日 星期五', f:84, type:'阴天', icon:'cloud', palette:[[0.08,0.45,0.86],[0.15,0.78,0.95],[0.34,0.95,0.90]], seed:12.8 },
+      ];
+
+      const canvas = document.querySelector('#weather-shader');
+      const gl = canvas.getContext('webgl', {alpha:true, antialias:true});
+      const vertex = `attribute vec2 p; void main(){gl_Position=vec4(p,0.,1.);}`;
+      const fragment = `precision highp float;
+        uniform vec2 r; uniform float t,m,oldSeed,newSeed; uniform vec3 a0,a1,a2,b0,b1,b2;
+        float hash21(vec2 p){
+          p=fract(p*vec2(123.34,456.21));
+          p+=dot(p,p+45.32);
+          return fract(p.x*p.y);
+        }
+        float valueNoise(vec2 p){
+          vec2 i=floor(p),f=fract(p);
+          f=f*f*(3.0-2.0*f);
+          float a=hash21(i),b=hash21(i+vec2(1.0,0.0));
+          float c=hash21(i+vec2(0.0,1.0)),d=hash21(i+vec2(1.0,1.0));
+          return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
+        }
+        float fbm(vec2 p){
+          float value=0.0,amplitude=0.5;
+          mat2 rotation=mat2(0.83,-0.56,0.56,0.83);
+          for(int i=0;i<4;i++){
+            value+=amplitude*valueNoise(p);
+            p=rotation*p*2.01+vec2(3.11,1.73);
+            amplitude*=0.5;
+          }
+          return value;
+        }
+        mat2 rotate2d(float angle){
+          float s=sin(angle),c=cos(angle);
+          return mat2(c,-s,s,c);
+        }
+        vec2 applyVortex(vec2 point,vec2 center,float strength,float radius,float phase){
+          vec2 delta=point-center;
+          float distanceToCenter=length(delta);
+          float influence=exp(-(distanceToCenter*distanceToCenter)/max(radius*radius,0.0001));
+          return center+rotate2d(strength*influence*phase)*delta;
+        }
+        float organicField(vec2 q,float falloff){return exp(-dot(q,q)*falloff);}
+        vec3 smokeField(vec2 uv,float seed,vec3 c0,vec3 c1,vec3 c2){
+          float aspect=r.x/max(r.y,1.0);
+          vec2 smokeUv=vec2(mix(0.22,0.98,uv.x),uv.y);
+          vec2 p=smokeUv-0.5;
+          p.x*=aspect;
+
+          float scale=0.88;
+          float time=t*1.25+seed*0.11;
+          float rightActivity=smoothstep(0.25,0.58,smokeUv.x);
+          float surgeA=0.5+0.5*sin(time*1.3);
+          float surgeB=0.5+0.5*sin(time*2.1+1.7);
+          float surgeC=0.5+0.5*cos(time*0.8-0.9);
+          float surge=surgeA*0.4+surgeB*0.35+surgeC*0.25;
+          float surgeStrength=mix(0.78,1.42,surge);
+
+          vec2 domain=p/scale;
+          vec2 flowA=vec2(
+            fbm(domain*0.7+vec2(time*0.16,-time*0.1)),
+            fbm(domain*0.82+vec2(-time*0.14,time*0.12)+5.2)
+          )*2.0-1.0;
+          vec2 warpedP=p+flowA*(0.34*mix(0.92,surgeStrength,0.72))*scale*rightActivity;
+
+          vec2 flowB=vec2(
+            fbm(warpedP*1.65/scale+vec2(-time*0.33,time*0.2)+3.4),
+            fbm(warpedP*1.85/scale+vec2(time*0.28,-time*0.24)-2.7)
+          )*2.0-1.0;
+          warpedP+=flowB*(0.2*mix(0.92,surgeStrength,0.48))*scale*rightActivity;
+
+          vec2 flowC=vec2(
+            fbm(warpedP*3.4/scale+vec2(time*0.52,-time*0.38)+7.0),
+            fbm(warpedP*3.9/scale+vec2(-time*0.44,time*0.48)-4.0)
+          )*2.0-1.0;
+          warpedP+=flowC*(0.085*mix(0.94,surgeStrength,0.3))*scale*rightActivity;
+
+          vec2 vortexA=vec2((0.74-0.5)*aspect,0.22);
+          vec2 vortexB=vec2((0.86-0.5)*aspect,-0.02);
+          vec2 vortexC=vec2((0.70-0.5)*aspect,-0.24);
+          float vortexPulseA=0.56+0.44*sin(time*1.07+0.3);
+          float vortexPulseB=0.52+0.48*cos(time*1.31+1.8);
+          float vortexPulseC=0.58+0.42*sin(time*0.91+3.1);
+          float vortexBoost=mix(0.8,1.25,surge);
+          vec2 vortexWarped=applyVortex(warpedP,vortexA,1.25*vortexBoost,0.34*scale,vortexPulseA);
+          vortexWarped=applyVortex(vortexWarped,vortexB,-1.1*vortexBoost,0.29*scale,vortexPulseB);
+          vortexWarped=applyVortex(vortexWarped,vortexC,0.95*vortexBoost,0.32*scale,vortexPulseC);
+          warpedP=mix(warpedP,vortexWarped,rightActivity);
+
+          vec2 centerPrimary=vec2((0.8+sin(time*1.05)*0.14-0.5)*aspect,0.1+cos(time*0.84)*0.18);
+          vec2 centerMid=vec2((0.73+cos(time*0.92+1.4)*0.16-0.5)*aspect,-0.2+sin(time*1.16+0.8)*0.17);
+          vec2 centerAccent=vec2((0.68+sin(time*0.77+2.2)*0.12-0.5)*aspect,0.02+cos(time*1.02)*0.15);
+          vec2 centerDeep=vec2((0.88+cos(time*1.21+2.8)*0.1-0.5)*aspect,-0.02+sin(time*0.94+1.1)*0.2);
+          vec2 centerPale=vec2((0.6+sin(time*0.66)*0.1-0.5)*aspect,cos(time*0.72)*0.12);
+
+          vec2 qPrimary=(warpedP-centerPrimary)/scale;
+          qPrimary=rotate2d(sin(time*0.73)*0.28)*qPrimary;
+          qPrimary.x*=0.56+sin(time*0.74)*0.16;
+          qPrimary.y*=1.42+cos(time*0.61)*0.22;
+          qPrimary.y+=sin(qPrimary.x*5.6+time*1.8)*0.22;
+          qPrimary.x+=cos(qPrimary.y*4.8-time*1.2)*0.16;
+          qPrimary+=flowB*0.08;
+          float primaryField=organicField(qPrimary,3.3);
+
+          vec2 qMid=(warpedP-centerMid)/scale;
+          qMid=rotate2d(-0.34+cos(time*0.86)*0.31)*qMid;
+          qMid.x*=0.72+cos(time*0.68)*0.18;
+          qMid.y*=1.28+sin(time*0.93)*0.24;
+          qMid.x+=sin(qMid.y*6.2-time*1.6)*0.18;
+          qMid.y+=cos(qMid.x*4.3+time*1.35)*0.2;
+          qMid-=flowA*0.09;
+          float midField=organicField(qMid,3.0);
+
+          vec2 qAccent=(warpedP-centerAccent)/scale;
+          qAccent=rotate2d(0.2+sin(time*1.11)*0.36)*qAccent;
+          qAccent.x*=0.88+sin(time*0.59)*0.2;
+          qAccent.y*=1.62+cos(time*0.81)*0.27;
+          qAccent.y+=sin(qAccent.x*6.8-time*1.05)*0.16;
+          qAccent.x+=cos(qAccent.y*5.2+time*1.43)*0.13;
+          qAccent+=flowC*0.12;
+          float accentField=organicField(qAccent,3.65);
+
+          vec2 qDeep=(warpedP-centerDeep)/scale;
+          qDeep=rotate2d(-0.42+cos(time*0.7)*0.45)*qDeep;
+          qDeep.x*=0.48+sin(time*0.88)*0.12;
+          qDeep.y*=2.05+cos(time*0.77)*0.36;
+          qDeep.y+=cos(qDeep.x*7.6+time*1.7)*0.19;
+          qDeep.x+=sin(qDeep.y*4.5-time*1.38)*0.11;
+          float deepField=organicField(qDeep,4.1);
+
+          vec2 qPale=(warpedP-centerPale)/scale;
+          qPale=rotate2d(sin(time*0.49)*0.18)*qPale;
+          qPale.x*=0.54+cos(time*0.57)*0.1;
+          qPale.y*=1.35+sin(time*0.64)*0.18;
+          qPale.y+=sin(qPale.x*4.1+time*0.92)*0.18;
+          float paleField=organicField(qPale,2.15);
+
+          float foldSignal=0.5+0.5*sin(warpedP.x*4.8-warpedP.y*5.4+time*1.7+flowC.x*2.6);
+          float foldMask=smoothstep(0.22,0.82,foldSignal);
+          primaryField*=0.7+foldMask*0.42;
+          midField*=1.12-foldMask*0.3;
+          accentField*=0.76+(1.0-foldMask)*0.4;
+          primaryField=clamp(primaryField*mix(0.86,1.22,surge),0.0,1.0);
+          midField=clamp(midField*mix(1.2,0.82,surge),0.0,1.0);
+          accentField=clamp(accentField*(0.9+surgeB*0.22),0.0,1.0);
+          float deepGate=smoothstep(0.28,0.76,0.5+0.5*sin(time*2.3+flowB.y*2.0));
+          deepField=clamp(deepField*deepGate*1.15,0.0,1.0);
+          paleField=clamp(paleField*mix(1.18,0.76,surge),0.0,1.0);
+
+          float primaryDominance=smoothstep(0.08,0.78,primaryField-midField*0.55+surge*0.2+flowC.x*0.08);
+          float midDominance=smoothstep(0.06,0.72,midField-primaryField*0.45+(1.0-surge)*0.22-flowC.y*0.08);
+          float accentDominance=smoothstep(0.08,0.7,accentField-max(primaryDominance,midDominance)*0.2+foldMask*0.14);
+          float maskNoise=flowA.x*0.055+flowB.y*0.035;
+          float fluidMask=smoothstep(0.28+maskNoise,0.54+maskNoise*0.5,smokeUv.x);
+
+          float hazeNoise=fbm(warpedP*1.2/scale+vec2(-time*0.12,time*0.08));
+          float hazeWave=0.5+0.5*sin(warpedP.x*4.2-warpedP.y*2.8+time+flowB.x);
+          float hazeField=smoothstep(0.22,0.78,hazeNoise*0.55+hazeWave*0.45);
+          hazeField*=1.0-primaryField*0.28;
+          hazeField*=1.0-midField*0.22;
+          hazeField*=mix(1.15,0.7,surge);
+          float hazeRegion=smoothstep(0.28,0.48,smokeUv.x)*(1.0-smoothstep(0.76,0.98,smokeUv.x));
+
+          vec3 baseColor=c2;
+          vec3 paleColor=mix(c2,c1,0.25);
+          vec3 brightColor=mix(c1,c2,0.35);
+          vec3 midColor=c1;
+          vec3 primaryColor=c0;
+          vec3 deepColor=c0*0.72;
+          vec3 accentColor=mix(c0,c1,0.4);
+          vec3 highlightColor=mix(c2,vec3(1.0),0.12);
+          vec3 fluidColor=baseColor;
+          fluidColor=mix(fluidColor,paleColor,paleField*0.58);
+          fluidColor=mix(fluidColor,brightColor,accentDominance*accentField*0.72);
+          fluidColor=mix(fluidColor,midColor,midDominance*0.88);
+          fluidColor=mix(fluidColor,primaryColor,primaryDominance*0.88);
+          fluidColor=mix(fluidColor,deepColor,primaryDominance*primaryField*smoothstep(0.58,1.0,surge)*0.46);
+          fluidColor=mix(fluidColor,accentColor,deepField*(1.0-midDominance*0.42)*0.62);
+          float luminance=dot(fluidColor,vec3(0.2126,0.7152,0.0722));
+          fluidColor=mix(vec3(luminance),fluidColor,mix(0.96,1.12,surge));
+
+          vec3 color=mix(baseColor,fluidColor,fluidMask);
+          color=mix(color,highlightColor,hazeField*hazeRegion*(0.28+(1.0-surge)*0.24));
+          float filmHighlight=smoothstep(0.6,0.92,0.5+0.5*sin(warpedP.x*3.6+warpedP.y*5.1-time*1.36+flowC.y*2.2));
+          filmHighlight*=smoothstep(0.48,0.72,smokeUv.x)*(1.0-smoothstep(0.92,1.0,smokeUv.x));
+          color=mix(color,highlightColor,filmHighlight*max(primaryField,midField)*0.12);
+          float leftClean=1.0-smoothstep(0.26,0.43,smokeUv.x);
+          color=mix(color,baseColor,leftClean*0.985);
+          return clamp(color,0.0,1.0);
+        }
+        void main(){
+          vec2 uv=gl_FragCoord.xy/r;
+          float e=m*m*(3.0-2.0*m);
+          vec3 c0=mix(a0,b0,e),c1=mix(a1,b1,e),c2=mix(a2,b2,e);
+          float seed=mix(oldSeed,newSeed,e);
+          gl_FragColor=vec4(smokeField(uv,seed,c0,c1,c2),1.0);
+        }`;
+      function make(type, src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); return s; }
+      const program=gl.createProgram(); gl.attachShader(program,make(gl.VERTEX_SHADER,vertex)); gl.attachShader(program,make(gl.FRAGMENT_SHADER,fragment)); gl.linkProgram(program); gl.useProgram(program);
+      const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);const p=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(p);gl.vertexAttribPointer(p,2,gl.FLOAT,false,0,0);
+      const u={};['r','t','m','oldSeed','newSeed','a0','a1','a2','b0','b1','b2'].forEach(k=>u[k]=gl.getUniformLocation(program,k));
+      let active=0, old=forecast[0], next=forecast[0], start=0, currentUnit='F';
+      function setPalette(prefix,item){ item.palette.forEach((c,i)=>gl.uniform3fv(u[prefix+i],c)); }
+      function resize(){const d=Math.min(devicePixelRatio,2),w=Math.round(canvas.clientWidth*d),h=Math.round(canvas.clientHeight*d);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}}
+      let lastFrame = 0;
+      function render(ms){
+        if(ms-lastFrame < 8){
+          requestAnimationFrame(render);
+          return;
+        }
+        lastFrame = ms;
+        resize();
+        gl.uniform2f(u.r,canvas.width,canvas.height);
+        gl.uniform1f(u.t,ms*.001);
+        const mix=Math.min(1,(ms-start)/850);
+        gl.uniform1f(u.m,mix);
+        gl.uniform1f(u.oldSeed,old.seed);
+        gl.uniform1f(u.newSeed,next.seed);
+        setPalette('a',old);
+        setPalette('b',next);
+        gl.drawArrays(gl.TRIANGLES,0,3);
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+
+      const el={date:document.querySelector('#date'),temp:document.querySelector('#temperature'),condition:document.querySelector('#condition'),icon:document.querySelector('#icon')};
+      function displayTemp(item){return currentUnit==='F'?item.f:Math.round((item.f-32)*5/9);}
+      function change(index){if(index===active)return;old=next;next=forecast[index];active=index;start=performance.now();document.querySelectorAll('.day').forEach((x,i)=>x.classList.toggle('active',i===index));
+        const from=Number(el.temp.textContent),to=displayTemp(next),t0=performance.now();function counter(now){const q=Math.min(1,(now-t0)/460),ease=1-Math.pow(1-q,3);el.temp.textContent=Math.round(from+(to-from)*ease);if(q<1)requestAnimationFrame(counter)}requestAnimationFrame(counter);
+        [el.date,el.condition,el.icon].forEach(x=>{x.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-5px)'}],{duration:90,fill:'forwards',easing:'ease-out'});});
+        setTimeout(()=>{el.date.textContent=next.day;el.condition.textContent=next.type;el.icon.className.baseVal='weather-icon '+next.icon;[el.date,el.condition,el.icon].forEach(x=>x.animate([{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,fill:'forwards',easing:'cubic-bezier(.22,1,.36,1)'}));},130);
+      }
+      document.querySelectorAll('.day').forEach(x=>x.addEventListener('click',()=>change(+x.dataset.index)));
+      document.querySelectorAll('.unit').forEach(x=>x.addEventListener('click',()=>{if(x.dataset.unit===currentUnit)return;currentUnit=x.dataset.unit;document.querySelectorAll('.unit').forEach(b=>b.classList.toggle('active',b===x));el.temp.textContent=displayTemp(next)}));
+    </script>
+  </body>
+</html>

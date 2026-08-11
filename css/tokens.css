@@ -12,6 +12,9 @@
 
 :root {
   color-scheme: light;
+  --font-ui: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: var(--font-ui);
+  --font-pixel: "Musicnet", "PingFang SC", sans-serif;
   --page-bg: #f4f4f6;
   --surface: #ffffff;
   --surface-soft: #f7f7f9;
@@ -35,8 +38,8 @@
   --z-content: 10;
   --z-header: 30;
   --z-modal: 50;
-  font-family: "KeepCalm", "Microsoft YaHei", sans-serif;
-  font-synthesis: none;
+  font-family: var(--font-ui);
+  font-synthesis: weight;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
