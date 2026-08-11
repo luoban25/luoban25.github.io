@@ -7,7 +7,7 @@
     const data = window.AICreativeLabData;
     const ui = window.AICreativeLabUI;
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get("slug") || "particle-rubik";
+    const slug = params.get("slug") || "echoes";
     const project = data.projectIndex[slug];
     const from = ["works", "skills", "spectra"].includes(params.get("from")) ? params.get("from") : "works";
 
